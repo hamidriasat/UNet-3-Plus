@@ -12,7 +12,7 @@ model file contain three different implementation of UNet 3+.
 - UNet_3Plus_DeepSup_CGM  ==> UNet_3Plus with Deep Supervison and Classification Guided Module
 
 ### Code Files
-* model.py ==> UNet 3+ model code full code
+* unet3plus.py ==> UNet 3+ model code full code
 
 
 ```
