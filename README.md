@@ -19,3 +19,5 @@ model file contain three different implementation of UNet 3+.
 Dependies:
 Tensorflow 2.0 or later
 ```
+
+Licensed under [MIT License](LICENSE)
