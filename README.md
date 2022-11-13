@@ -10,14 +10,25 @@
 
 UNet 3+ is lateset from Unet family, proposed for sementic image segmentation.  it takes advantage of full-scale skip connections and deep supervisions.The full-scale skip connections incorporate low-level details with high-level semantics from feature maps in different scales; while the deep supervision learns hierarchical representations from the full-scale aggregated feature maps.
 
-
-model file contain three different implementation of UNet 3+. 
-- UNet_3Plus              ==> UNet_3Plus
-- UNet_3Plus_DeepSup      ==> UNet_3Plus with Deep Supervison
-- UNet_3Plus_DeepSup_CGM  ==> UNet_3Plus with Deep Supervison and Classification Guided Module
+This repository contain all three versions of **UNet 3+** along with hybrid loss function.
 
 ### Code Files
-* unet3plus.py ==> UNet 3+ model code full code
+* loss.py &rarr; hybrid loss function for UNet3+
+* unet3plus.py &rarr; base model of UNet3+
+* unet3plus_deep_supervision.py &rarr; UNet3+ with Deep Supervison
+* unet3plus_deep_supervision_cgm.py &rarr; UNet3+ with Deep Supervison and Classification Guided Module
+* unet3plus_utils.py &rarr; helper functions
+
+# Architecture
+![alt text](https://github.com/hamidriasat/UNet-3-Plus/blob/main/images/unet3p_architecture.png)
+![alt text](https://github.com/hamidriasat/UNet-3-Plus/blob/main/images/unet3p_architecture_symbols.png)
+
+
+# Modules
+![alt text](https://github.com/hamidriasat/UNet-3-Plus/blob/main/images/unet3p_modules.png)
+
+# Quantitative Comparison
+![alt text](https://github.com/hamidriasat/UNet-3-Plus/blob/main/images/unet3p_results.png)
 
 
 ```
