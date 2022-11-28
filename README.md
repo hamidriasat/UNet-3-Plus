@@ -3,37 +3,9 @@
 
 [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/unet-3-a-full-scale-connected-unet-for/medical-image-segmentation-on-lits2017)](https://paperswithcode.com/sota/medical-image-segmentation-on-lits2017?p=unet-3-a-full-scale-connected-unet-for)
 
-` Hit star ⭐ if you find my work useful. `
+This branch will contain code to reproduce UNet3+ results on [LiTS - Liver Tumor Segmentation Challenge](https://competitions.codalab.org/competitions/15595).
 
+This branch is in development mode.
 
-## [UNet 3+](https://arxiv.org/abs/2004.08790) for Image Segmentation in Tensorflow Keras.
-
-UNet 3+ is lateset from Unet family, proposed for sementic image segmentation.  it takes advantage of full-scale skip connections and deep supervisions.The full-scale skip connections incorporate low-level details with high-level semantics from feature maps in different scales; while the deep supervision learns hierarchical representations from the full-scale aggregated feature maps.
-
-This repository contain all three versions of **UNet 3+** along with hybrid loss function.
-
-### Code Files
-* loss.py &rarr; hybrid loss function for UNet3+
-* unet3plus.py &rarr; base model of UNet3+
-* unet3plus_deep_supervision.py &rarr; UNet3+ with Deep Supervison
-* unet3plus_deep_supervision_cgm.py &rarr; UNet3+ with Deep Supervison and Classification Guided Module
-* unet3plus_utils.py &rarr; helper functions
-
-# Architecture
-![alt text](https://github.com/hamidriasat/UNet-3-Plus/blob/main/images/unet3p_architecture.png)
-![alt text](https://github.com/hamidriasat/UNet-3-Plus/blob/main/images/unet3p_architecture_symbols.png)
-
-
-# Modules
-![alt text](https://github.com/hamidriasat/UNet-3-Plus/blob/main/images/unet3p_modules.png)
-
-# Quantitative Comparison
-![alt text](https://github.com/hamidriasat/UNet-3-Plus/blob/main/images/unet3p_results.png)
-
-
-```
-Dependies:
-Tensorflow 2.0 or later
-```
 
 Licensed under [MIT License](LICENSE)
