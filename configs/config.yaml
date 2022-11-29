@@ -1,0 +1,38 @@
+work_dir: "H:/Projects/UNet3P/"
+
+data_preparation:
+  resized_height: 320
+  resized_width: 320
+
+  scan_min_value: -200
+  scan_max_value: 250
+
+  # unprocessed scan data paths
+  scans_train_data_path: "/data/Training Batch 2/"
+  scans_val_data_path: "/data/Training Batch 1/"
+
+data_path:
+  train:
+    data_path: "/data/train/"
+  val:
+    data_path: "/data/val/"
+
+
+train:
+  data_path: "/data/train/"
+  shuffle: True
+val:
+  data_path: "/data/val/"
+  shuffle: False
+
+
+
+
+# to stop hydra from storing logs files
+defaults:
+  - _self_
+  - override hydra/hydra_logging: disabled
+  - override hydra/job_logging: disabled
+
+hydra:
+  output_subdir: null

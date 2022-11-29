@@ -5,12 +5,12 @@ LiTS: https://competitions.codalab.org/competitions/17094
 import os
 from glob import glob
 from pathlib import Path
+from tqdm import tqdm
 import numpy as np
 import cv2
 import nibabel as nib
-
-# sys.path.append(os.path.abspath("../"))  # remove me
-BASE_PATH = "H:\\Projects\\UNet3P"  # os.getcwd()
+import hydra
+from omegaconf import DictConfig
 
 
 def join_paths(*paths):
@@ -27,6 +27,8 @@ def read_nii(filepath):
     Reads .nii file and returns pixel array
     '''
     ct_scan = nib.load(filepath).get_fdata()
+    # TODO: Verify images orientation
+    # in both train and test set, especially on train scan 130
     ct_scan = np.rot90(np.array(ct_scan))
     return ct_scan
 
@@ -49,11 +51,11 @@ def linear_scale(img):
     return img * 255
 
 
-def clip_scan(img, min=-200, max=250):
+def clip_scan(img, min_value, max_value):
     """
     Clip scan to given range
     """
-    return np.clip(img, min, max)
+    return np.clip(img, min_value, max_value)
 
 
 def resize_image(img, height, width, resize_method):
@@ -77,9 +79,11 @@ def resize_scan(scan, new_height, new_width, scan_type):
     for start in range(0, scan_shape[2], scan_shape[1]):
         end = start + scan_shape[1]
         if end >= scan_shape[2]: end = scan_shape[2]
-        resized_scan[:, :, start:end] = resize_image(scan[:, :, start:end],
-                                                     new_height, new_width,
-                                                     resize_method)
+        resized_scan[:, :, start:end] = resize_image(
+            scan[:, :, start:end],
+            new_height, new_width,
+            resize_method
+        )
 
     return resized_scan
 
@@ -99,7 +103,13 @@ def save_images(scan, save_path, img_index):
         # swap before_index with after_index, if you want to load this image in
         # correct order using OpenCV, since center index is same, so for now leaving it as it is
         new_img_path = join_paths(save_path, f"image_{img_index}_{index}.png")
-        new_image = np.stack((scan[:, :, before_index], scan[:, :, index], scan[:, :, after_index]), axis=-1)
+        new_image = np.stack(
+            (
+                scan[:, :, before_index],
+                scan[:, :, index],
+                scan[:, :, after_index]
+            )
+            , axis=-1)
 
         cv2.imwrite(new_img_path, new_image)  # save the images as .png
 
@@ -113,15 +123,25 @@ def save_mask(scan, save_path, mask_index):
         cv2.imwrite(new_mask_path, scan[:, :, index])  # save grey scale image
 
 
-def extract_images(images_path, save_path, new_height=320, new_width=320, scan_type="image"):
-    for image_path in images_path:
+def extract_images(cfg, images_path, save_path, scan_type="image", ):
+    for image_path in tqdm(images_path):
         _, index = str(Path(image_path).stem).split("-")
 
         scan = read_nii(image_path)
-        scan = resize_scan(scan, new_height, new_width, scan_type)
+        scan = resize_scan(
+            scan,
+            cfg.data_preparation.resized_height,
+            cfg.data_preparation.resized_width,
+            scan_type
+        )
         if scan_type == "image":
-            scan = clip_scan(scan, )
+            scan = clip_scan(
+                scan,
+                cfg.data_preparation.scan_min_value,
+                cfg.data_preparation.scan_max_value
+            )
             scan = linear_scale(scan)
+            scan = np.uint8(scan)
             save_images(scan, save_path, index)
         else:
             # 0 for background/non-lesion, 1 for liver, 2 for lesion/tumor
@@ -132,32 +152,83 @@ def extract_images(images_path, save_path, new_height=320, new_width=320, scan_t
             save_mask(scan, save_path, index)
 
 
-def extract_paths():
-    train_images_names = glob(join_paths(BASE_PATH, "/data/Training Batch 2/volume-*.nii"))
-    train_mask_names = glob(join_paths(BASE_PATH, "/data/Training Batch 2/segmentation-*.nii"))
+@hydra.main(version_base=None, config_path="configs", config_name="config")
+def extract_paths(cfg: DictConfig):
+    train_images_names = glob(
+        join_paths(
+            cfg.work_dir,
+            cfg.data_preparation.scans_train_data_path,
+            "volume-*.nii"
+        )
+    )
+    train_mask_names = glob(
+        join_paths(
+            cfg.work_dir,
+            cfg.data_preparation.scans_train_data_path,
+            "segmentation-*.nii"
+        )
+    )
 
-    val_images_names = glob(join_paths(BASE_PATH, "/data/Training Batch 1/volume-*.nii"))
-    val_mask_names = glob(join_paths(BASE_PATH, "/data/Training Batch 1/segmentation-*.nii"))
+    assert len(train_images_names) == len(train_mask_names), \
+        "Train volume and segmentation are not same in length"
+
+    val_images_names = glob(
+        join_paths(
+            cfg.work_dir,
+            cfg.data_preparation.scans_val_data_path,
+            "volume-*.nii"
+        )
+    )
+    val_mask_names = glob(
+        join_paths(
+            cfg.work_dir,
+            cfg.data_preparation.scans_val_data_path,
+            "segmentation-*.nii"
+        )
+    )
+    assert len(val_images_names) == len(val_mask_names), \
+        "Validation volume and segmentation are not same in length"
 
     train_images_names = sorted(train_images_names)
     train_mask_names = sorted(train_mask_names)
     val_images_names = sorted(val_images_names)
     val_mask_names = sorted(val_mask_names)
 
-    train_images_path = join_paths(BASE_PATH, "/data/train/images")
-    train_mask_path = join_paths(BASE_PATH, "/data/train/mask")
-    val_images_path = join_paths(BASE_PATH, "/data/val/images")
-    val_mask_path = join_paths(BASE_PATH, "/data/val/mask")
+    train_images_path = join_paths(
+        cfg.work_dir, cfg.data_path.train_data_path, "images"
+    )
+    train_mask_path = join_paths(
+        cfg.work_dir, cfg.data_path.train_data_path, "mask"
+    )
+    val_images_path = join_paths(
+        cfg.work_dir, cfg.data_path.val_data_path, "images"
+    )
+    val_mask_path = join_paths(
+        cfg.work_dir, cfg.data_path.val_data_path, "mask"
+    )
 
     create_directory(train_images_path)
     create_directory(train_mask_path)
     create_directory(val_images_path)
     create_directory(val_mask_path)
 
-    extract_images(train_images_names, train_images_path, scan_type="image")
-    extract_images(train_mask_names, train_mask_path, scan_type="mask")
-    extract_images(val_images_names, val_images_path, scan_type="image")
-    extract_images(val_mask_names, val_mask_path, scan_type="mask")
+    print("\nExtracting train images")
+    extract_images(
+        cfg, train_images_names, train_images_path, scan_type="image"
+    )
+    print("\nExtracting train mask")
+    extract_images(
+        cfg, train_mask_names, train_mask_path, scan_type="mask"
+    )
+    print("\nExtracting val images")
+    extract_images(
+        cfg, val_images_names, val_images_path, scan_type="image"
+    )
+    print("\nExtracting val mask")
+    extract_images(
+        cfg, val_mask_names, val_mask_path, scan_type="mask"
+    )
 
 
-extract_paths()
+if __name__ == '__main__':
+    extract_paths()
