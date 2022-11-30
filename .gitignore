@@ -1,6 +1,8 @@
 .idea
 __pycache__
 
+!*.gitkeep/
+
 data/*
 data_preparation/verify_preprocess_data.ipynb
 old_data_preperation/
