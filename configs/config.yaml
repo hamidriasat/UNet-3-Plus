@@ -11,20 +11,55 @@ data_preparation:
   scans_train_data_path: "/data/Training Batch 2/"
   scans_val_data_path: "/data/Training Batch 1/"
 
-data_path:
-  train:
-    data_path: "/data/train/"
-  val:
-    data_path: "/data/val/"
+PATHS:
+  TRAIN:
+    DATA_PATH: "/data/train/"
+    CHECKPOINT_PATH: ""
+    TB_LOG_PATH: ""
+  VAL:
+    DATA_PATH: "/data/val/"
+
+INPUT:
+  HEIGHT: 320
+  WIDTH: 320
+  CHANNELS: 3
+
+OUTPUT:
+  CLASSES: 2
 
 
-train:
-  data_path: "/data/train/"
-  shuffle: True
-val:
-  data_path: "/data/val/"
-  shuffle: False
+#TRAINING_HYPER_PARAMETERS:
+HYPER_PARAMETERS:
+  BATCH_SIZE: 5
+  EPOCHS: 5
+  LEARNING_RATE: 3e-4  # 1e-3 # 0.001 # 3e-4
 
+
+PREPROCESS_DATA:
+  RESIZE:
+    VALUE: True
+    HEIGHT: None
+    WIDTH: None
+
+  COLOR_CODE: RGB
+  PREPROCESSING_TYPE: "normalize"
+
+  NORMALIZE_MASK:
+    VALUE: FALSE
+    NORMALIZE_VALUE: 255
+
+
+
+#TRAINING:
+#  TRAIN:
+#    data_path: "/data/train/"
+#    shuffle: True
+#  VAL:
+#    data_path: "/data/val/"
+#    shuffle: False
+#
+#  HYPER_PARAMETERS:
+#    sss: sd
 
 
 
