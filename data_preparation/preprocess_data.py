@@ -3,6 +3,7 @@ Convert LiTS 2017 (Liver Tumor Segmentation) data into UNet3+ data format
 LiTS: https://competitions.codalab.org/competitions/17094
 """
 import os
+import sys
 from glob import glob
 from pathlib import Path
 from tqdm import tqdm
@@ -12,14 +13,8 @@ import nibabel as nib
 import hydra
 from omegaconf import DictConfig
 
-
-def join_paths(*paths):
-    return os.path.normpath(os.path.sep.join(path.rstrip(r"\/") for path in paths))
-
-
-def create_directory(path):
-    if not os.path.exists(path):
-        os.makedirs(path)
+sys.path.append(os.path.abspath("./"))
+from utils.general_utils import create_directory, join_paths
 
 
 def read_nii(filepath):
@@ -152,7 +147,7 @@ def extract_images(cfg, images_path, save_path, scan_type="image", ):
             save_mask(scan, save_path, index)
 
 
-@hydra.main(version_base=None, config_path="configs", config_name="config")
+@hydra.main(version_base=None, config_path="../configs", config_name="config")
 def extract_paths(cfg: DictConfig):
     train_images_names = glob(
         join_paths(
@@ -195,16 +190,16 @@ def extract_paths(cfg: DictConfig):
     val_mask_names = sorted(val_mask_names)
 
     train_images_path = join_paths(
-        cfg.work_dir, cfg.data_path.train_data_path, "images"
+        cfg.work_dir, cfg.PATHS.TRAIN.DATA_PATH, "images"
     )
     train_mask_path = join_paths(
-        cfg.work_dir, cfg.data_path.train_data_path, "mask"
+        cfg.work_dir, cfg.PATHS.TRAIN.DATA_PATH, "mask"
     )
     val_images_path = join_paths(
-        cfg.work_dir, cfg.data_path.val_data_path, "images"
+        cfg.work_dir, cfg.PATHS.VAL.DATA_PATH, "images"
     )
     val_mask_path = join_paths(
-        cfg.work_dir, cfg.data_path.val_data_path, "mask"
+        cfg.work_dir, cfg.PATHS.VAL.DATA_PATH, "mask"
     )
 
     create_directory(train_images_path)
