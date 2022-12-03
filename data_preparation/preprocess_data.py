@@ -18,9 +18,9 @@ from utils.general_utils import create_directory, join_paths
 
 
 def read_nii(filepath):
-    '''
+    """
     Reads .nii file and returns pixel array
-    '''
+    """
     ct_scan = nib.load(filepath).get_fdata()
     # TODO: Verify images orientation
     # in both train and test set, especially on train scan 130

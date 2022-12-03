@@ -5,44 +5,22 @@ import cv2
 from omegaconf import DictConfig
 
 
-
 class DataGenerator(tf.keras.utils.Sequence):
     """
-        generate data for model by reading images and their bounding box file.
-        taken from # https://stanford.edu/~shervine/blog/keras-how-to-generate-data-on-the-fly
+    Generate data for model by reading images and their corresponding masks.
+    """
 
-        Args:
-            img_folder (str): path to images folder
-            labels_folder (str): path to labels folder, which contain one text file of bounding boxes for each image
-            batch_size (int):
-            height (int): image height
-            width (int): image width
-            max_boxes (int): max boxes that model can predict
-            anchors (numpy.array[int, 2]): normalized anchors of shape (int,2) ,
-            The first and second columns of the numpy arrays respectively contain the anchors width and height.
-            anchors_mask (numpy.array): mask against anchors
-            first_stage (int): stride of first/lowest stage
-            shuffle (boolean): whether shuffle data after each epoch or not
+    def __init__(self, cfg: DictConfig, mode):
         """
+        Initialization
+        """
+        self.cfg = cfg
+        self.mode = mode
 
-    def __init__(self, img_folder, labels_folder, batch_size, height, width, max_boxes, anchors, anchors_mask,
-                 first_stage, shuffle=True):
-        'Initialization'
-        self.img_folder = img_folder
-        self.labels_folder = labels_folder
-        self.batch_size = batch_size
-        self.height = height
-        self.width = width
-        self.max_boxes = max_boxes
-        self.anchors = anchors
-        self.anchors_mask = anchors_mask
-        self.first_stage = first_stage
-        self.shuffle = shuffle
-
-        self.img_paths = os.listdir(self.img_folder)  # has only images name not full path
-        self.labels_paths = os.listdir(self.labels_folder)
+        self.img_paths = os.listdir(self.cfg.PATHS[mode].IMAGES_PATH)  # has only images name not full path
+        self.mask_paths = os.listdir(self.cfg.PATHS[mode].MASK_PATH)  # has only images name not full path
         self.img_paths.sort()
-        self.labels_paths.sort()
+        self.mask_paths.sort()
 
         self.on_epoch_end()
 

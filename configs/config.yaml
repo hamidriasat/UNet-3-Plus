@@ -13,7 +13,8 @@ data_preparation:
 
 PATHS:
   TRAIN:
-    DATA_PATH: "/data/train/"
+    IMAGES_PATH: "/data/train/"
+    MASK_PATH: "/data/train/"
     CHECKPOINT_PATH: ""
     TB_LOG_PATH: ""
   VAL:
