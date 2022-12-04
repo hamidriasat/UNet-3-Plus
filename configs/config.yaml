@@ -1,15 +1,15 @@
-work_dir: "H:/Projects/UNet3P/"
+WORK_DIR: "H:/Projects/UNet3P/"
 
-data_preparation:
-  resized_height: 320
-  resized_width: 320
+DATA_PREPARATION:
+  RESIZED_HEIGHT: 320
+  RESIZED_WIDTH: 320
 
-  scan_min_value: -200
-  scan_max_value: 250
+  SCAN_MIN_VALUE: -200
+  SCAN_MAX_VALUE: 250
 
   # unprocessed scan data paths
-  scans_train_data_path: "/data/Training Batch 2/"
-  scans_val_data_path: "/data/Training Batch 1/"
+  SCANS_TRAIN_DATA_PATH: "/data/Training Batch 2/"
+  SCANS_VAL_DATA_PATH: "/data/Training Batch 1/"
 
 PATHS:
   TRAIN:
@@ -18,7 +18,8 @@ PATHS:
     CHECKPOINT_PATH: ""
     TB_LOG_PATH: ""
   VAL:
-    DATA_PATH: "/data/val/"
+    IMAGES_PATH: "/data/val/"
+    MASK_PATH: "/data/val/"
 
 INPUT:
   HEIGHT: 320
@@ -38,7 +39,7 @@ HYPER_PARAMETERS:
 
 PREPROCESS_DATA:
   RESIZE:
-    VALUE: True
+    VALUE: False
     HEIGHT: None
     WIDTH: None
 

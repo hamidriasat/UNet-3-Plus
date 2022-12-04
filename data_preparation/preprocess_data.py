@@ -105,7 +105,7 @@ def save_images(scan, save_path, img_index):
                 scan[:, :, after_index]
             )
             , axis=-1)
-
+        new_image = cv2.cvtColor(new_image, cv2.COLOR_RGB2BGR)  # RGB to BGR
         cv2.imwrite(new_img_path, new_image)  # save the images as .png
 
 
@@ -125,15 +125,15 @@ def extract_images(cfg, images_path, save_path, scan_type="image", ):
         scan = read_nii(image_path)
         scan = resize_scan(
             scan,
-            cfg.data_preparation.resized_height,
-            cfg.data_preparation.resized_width,
+            cfg.DATA_PREPARATION.RESIZED_HEIGHT,
+            cfg.DATA_PREPARATION.RESIZED_WIDTH,
             scan_type
         )
         if scan_type == "image":
             scan = clip_scan(
                 scan,
-                cfg.data_preparation.scan_min_value,
-                cfg.data_preparation.scan_max_value
+                cfg.DATA_PREPARATION.SCAN_MIN_VALUE,
+                cfg.DATA_PREPARATION.SCAN_MAX_VALUE
             )
             scan = linear_scale(scan)
             scan = np.uint8(scan)
@@ -151,15 +151,15 @@ def extract_images(cfg, images_path, save_path, scan_type="image", ):
 def extract_paths(cfg: DictConfig):
     train_images_names = glob(
         join_paths(
-            cfg.work_dir,
-            cfg.data_preparation.scans_train_data_path,
+            cfg.WORK_DIR,
+            cfg.DATA_PREPARATION.SCANS_TRAIN_DATA_PATH,
             "volume-*.nii"
         )
     )
     train_mask_names = glob(
         join_paths(
-            cfg.work_dir,
-            cfg.data_preparation.scans_train_data_path,
+            cfg.WORK_DIR,
+            cfg.DATA_PREPARATION.SCANS_TRAIN_DATA_PATH,
             "segmentation-*.nii"
         )
     )
@@ -169,15 +169,15 @@ def extract_paths(cfg: DictConfig):
 
     val_images_names = glob(
         join_paths(
-            cfg.work_dir,
-            cfg.data_preparation.scans_val_data_path,
+            cfg.WORK_DIR,
+            cfg.DATA_PREPARATION.SCANS_VAL_DATA_PATH,
             "volume-*.nii"
         )
     )
     val_mask_names = glob(
         join_paths(
-            cfg.work_dir,
-            cfg.data_preparation.scans_val_data_path,
+            cfg.WORK_DIR,
+            cfg.DATA_PREPARATION.SCANS_VAL_DATA_PATH,
             "segmentation-*.nii"
         )
     )
@@ -190,16 +190,16 @@ def extract_paths(cfg: DictConfig):
     val_mask_names = sorted(val_mask_names)
 
     train_images_path = join_paths(
-        cfg.work_dir, cfg.PATHS.TRAIN.DATA_PATH, "images"
+        cfg.WORK_DIR, cfg.PATHS.TRAIN.IMAGES_PATH, "images"
     )
     train_mask_path = join_paths(
-        cfg.work_dir, cfg.PATHS.TRAIN.DATA_PATH, "mask"
+        cfg.WORK_DIR, cfg.PATHS.TRAIN.MASK_PATH, "mask"
     )
     val_images_path = join_paths(
-        cfg.work_dir, cfg.PATHS.VAL.DATA_PATH, "images"
+        cfg.WORK_DIR, cfg.PATHS.VAL.IMAGES_PATH, "images"
     )
     val_mask_path = join_paths(
-        cfg.work_dir, cfg.PATHS.VAL.DATA_PATH, "mask"
+        cfg.WORK_DIR, cfg.PATHS.VAL.MASK_PATH, "mask"
     )
 
     create_directory(train_images_path)
