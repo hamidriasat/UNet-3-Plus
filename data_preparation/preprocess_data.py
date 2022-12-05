@@ -15,6 +15,7 @@ from omegaconf import DictConfig
 
 sys.path.append(os.path.abspath("./"))
 from utils.general_utils import create_directory, join_paths
+from utils.images_utils import resize_image
 
 
 def read_nii(filepath):
@@ -51,13 +52,6 @@ def clip_scan(img, min_value, max_value):
     Clip scan to given range
     """
     return np.clip(img, min_value, max_value)
-
-
-def resize_image(img, height, width, resize_method):
-    """
-    Resize image
-    """
-    return cv2.resize(img, dsize=(width, height), interpolation=resize_method)
 
 
 def resize_scan(scan, new_height, new_width, scan_type):
@@ -190,16 +184,16 @@ def extract_paths(cfg: DictConfig):
     val_mask_names = sorted(val_mask_names)
 
     train_images_path = join_paths(
-        cfg.WORK_DIR, cfg.PATHS.TRAIN.IMAGES_PATH, "images"
+        cfg.WORK_DIR, cfg.DATASET.TRAIN.IMAGES_PATH
     )
     train_mask_path = join_paths(
-        cfg.WORK_DIR, cfg.PATHS.TRAIN.MASK_PATH, "mask"
+        cfg.WORK_DIR, cfg.DATASET.TRAIN.MASK_PATH
     )
     val_images_path = join_paths(
-        cfg.WORK_DIR, cfg.PATHS.VAL.IMAGES_PATH, "images"
+        cfg.WORK_DIR, cfg.DATASET.VAL.IMAGES_PATH
     )
     val_mask_path = join_paths(
-        cfg.WORK_DIR, cfg.PATHS.VAL.MASK_PATH, "mask"
+        cfg.WORK_DIR, cfg.DATASET.VAL.MASK_PATH
     )
 
     create_directory(train_images_path)

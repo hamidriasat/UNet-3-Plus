@@ -1,19 +1,125 @@
+from datetime import datetime
 import hydra
-# import data_generator
-from omegaconf import DictConfig
+import numpy as np
+import tensorflow as tf
+import data_generator
+from omegaconf import DictConfig, OmegaConf
+from tensorflow.keras.callbacks import (
+    ReduceLROnPlateau,
+    EarlyStopping,
+    ModelCheckpoint,
+    TensorBoard
+)
+
+from utils.general_utils import create_directory, join_paths
+from model.unet3plus import unet_3plus, tiny_unet_3plus
+from losses.loss import dice_coef
+from losses.unet_loss import unet3p_hybrid_loss
+
+
+def create_training_folders(cfg: DictConfig):
+    create_directory(
+        join_paths(
+            cfg.WORK_DIR,
+            cfg.CALLBACKS.MODEL_CHECKPOINT.CHECKPOINT_PATH
+        )
+    )
+    create_directory(
+        join_paths(
+            cfg.WORK_DIR,
+            cfg.CALLBACKS.TENSORBOARD.TB_LOG_PATH
+        )
+    )
+
+
+def create_model(cfg: DictConfig):
+    return tiny_unet_3plus(
+        [
+            cfg.INPUT.HEIGHT,
+            cfg.INPUT.WIDTH,
+            cfg.INPUT.CHANNELS,
+        ],
+        cfg.OUTPUT.CLASSES
+    )
+
+
+def train(cfg: DictConfig):
+    # create_training_folders(cfg)
+
+    train_generator = data_generator.DataGenerator(cfg, mode="TRAIN")
+    val_generator = data_generator.DataGenerator(cfg, mode="VAL")
+    # in case of Sequence generator use for loop
+    # for i, (temp_batch_img, temp_batch_mask) in enumerate(train_generator):
+    #     print(len(temp_batch_img))
+    #     if i >= 3: break
+
+    model = create_model(cfg)
+    # model.summary()
+
+    optimizer = tf.keras.optimizers.Adam(lr=cfg.HYPER_PARAMETERS.LEARNING_RATE)
+    model.compile(
+        optimizer=optimizer,
+        loss=unet3p_hybrid_loss,
+        metrics=[dice_coef],
+    )
+
+    # the tensorboard log directory will be a unique subdirectory
+    # based on the start time for the run
+    tb_log_dir = join_paths(
+        cfg.WORK_DIR,
+        cfg.CALLBACKS.TENSORBOARD.TB_LOG_PATH,
+        "{}".format(datetime.now().strftime("%Y.%m.%d.%H.%M.%S"))
+    )
+    print("TensorBoard Directory\n" + tb_log_dir)
+
+    callbacks = [
+        TensorBoard(log_dir=tb_log_dir, write_graph=False, profile_batch=0),
+        EarlyStopping(
+            patience=cfg.CALLBACKS.EARLY_STOPPING.PATIENCE,
+            verbose=1
+        ),
+        ModelCheckpoint(
+            join_paths(
+                cfg.WORK_DIR,
+                cfg.CALLBACKS.MODEL_CHECKPOINT.CHECKPOINT_PATH
+            ),
+            verbose=1,
+            save_weights_only=cfg.CALLBACKS.MODEL_CHECKPOINT.SAVE_WEIGHTS_ONLY,
+            save_best_only=cfg.CALLBACKS.MODEL_CHECKPOINT.SAVE_BEST_ONLY,
+            monitor="val_loss",
+            mode="min"
+        )
+    ]
+    training_steps = int(
+        np.floor(
+            len(train_generator.images_paths) / cfg.HYPER_PARAMETERS.BATCH_SIZE
+        )
+    )
+    validation_steps = int(
+        np.floor(
+            len(val_generator.images_paths) / cfg.HYPER_PARAMETERS.BATCH_SIZE
+        )
+    )
+
+    model.fit(
+        x=train_generator,
+        steps_per_epoch=training_steps,
+        validation_data=val_generator,
+        validation_steps=validation_steps,
+        epochs=cfg.HYPER_PARAMETERS.EPOCHS,
+        batch_size=cfg.HYPER_PARAMETERS.BATCH_SIZE,
+        callbacks=callbacks,
+        workers=3,
+    )
+
+
+print("Done")
 
 
 @hydra.main(version_base=None, config_path="configs", config_name="config")
 def main(cfg: DictConfig):
-    # if cfg.PREPROCESS_DATA.RESIZE.VALUE:
-    if isinstance(cfg.PREPROCESS_DATA.RESIZE.VALUE, bool):
-        print(cfg.PREPROCESS_DATA.RESIZE)
-    # # Train the YoloV4_Model using sequence generator
-    # train_generator = data_generator.DataGenerator(cfg, shuffle=True)
-    #
-    # # # in case of Sequence generator use for loop
-    # for temp_batch_img, temp_batch_mask in train_generator:
-    #     print(len(temp_batch_img))
+    # print(OmegaConf.load(cfg))
+    train(cfg)
 
 
 if __name__ == "__main__":

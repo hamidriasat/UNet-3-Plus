@@ -3,30 +3,8 @@ import cv2
 from PIL import Image
 
 
-def read_pil_image(img_path):
-    return Image.open(img_path)
-
-
-def pil_image_to_array(pil_image):
-    return np.array(pil_image)
-
-
-def pil_to_opencv_image(pil_image):
-    """
-    Convert Pillow image to OpenCV image
-    """
-    if not isinstance(pil_image, np.ndarray):
-        pil_image = pil_image_to_array(pil_image)
-    return cv2.cvtColor(pil_image, cv2.COLOR_RGB2BGR)
-
-
-def opencv_to_pil_image(opencv_image):
-    """
-    Convert OpenCV image to Pillow image
-    """
-
-    cv2_img = cv2.cvtColor(opencv_image, cv2.COLOR_BGR2RGB)
-    return Image.fromarray(cv2_img)
+def read_image(img_path, color_mode):
+    return cv2.imread(img_path, color_mode)
 
 
 def resize_image(img, height, width, resize_method=cv2.INTER_CUBIC):
@@ -36,13 +14,31 @@ def resize_image(img, height, width, resize_method=cv2.INTER_CUBIC):
     return cv2.resize(img, dsize=(width, height), interpolation=resize_method)
 
 
-def read_image(path: str, resize: dict, normalize_type: str):
-    image = read_pil_image(path)
+def prepare_image(path: str, resize: dict, normalize_type: str):
+    image = read_image(path, cv2.IMREAD_COLOR)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
     if resize.VALUE:
-        image = pil_to_opencv_image(image)
-        image = resize_image(image, resize.HEIGHT, resize.WIDTH)
-        image = opencv_to_pil_image(image)
+        # TODO verify image resizing method
+        image = resize_image(image, resize.HEIGHT, resize.WIDTH, cv2.INTER_AREA)
 
-    image = pil_image_to_array(image)
+    if normalize_type == "normalize":
+        image = image / 255.0
 
+    image = image.astype(np.float32)
+
+    return image
+
+
+def prepare_mask(path: str, resize: dict, normalize_mask: dict):
+    mask = read_image(path, cv2.IMREAD_GRAYSCALE)
+
+    if resize.VALUE:
+        mask = resize_image(mask, resize.HEIGHT, resize.WIDTH, cv2.INTER_NEAREST)
+
+    if normalize_mask.VALUE:
+        mask = mask / normalize_mask.NORMALIZE_VALUE
+
+    mask = mask.astype(np.int32)
+
+    return mask

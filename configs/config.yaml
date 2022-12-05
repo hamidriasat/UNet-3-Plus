@@ -1,54 +1,80 @@
 WORK_DIR: "H:/Projects/UNet3P/"
 
 DATA_PREPARATION:
+  # unprocessed scan data paths
+  SCANS_TRAIN_DATA_PATH: "/data/Training Batch 2/"
+  SCANS_VAL_DATA_PATH: "/data/Training Batch 1/"
+
   RESIZED_HEIGHT: 320
   RESIZED_WIDTH: 320
 
   SCAN_MIN_VALUE: -200
   SCAN_MAX_VALUE: 250
 
-  # unprocessed scan data paths
-  SCANS_TRAIN_DATA_PATH: "/data/Training Batch 2/"
-  SCANS_VAL_DATA_PATH: "/data/Training Batch 1/"
 
-PATHS:
+DATASET:
   TRAIN:
-    IMAGES_PATH: "/data/train/"
-    MASK_PATH: "/data/train/"
-    CHECKPOINT_PATH: ""
-    TB_LOG_PATH: ""
+    IMAGES_PATH: "/data/train/images"
+    MASK_PATH: "/data/train/mask"
   VAL:
-    IMAGES_PATH: "/data/val/"
-    MASK_PATH: "/data/val/"
+    IMAGES_PATH: "/data/val/images"
+    MASK_PATH: "/data/val/mask"
 
+# Maximum number of processes to spin up
+#            when using process-based threading.
+VERBOSE: 1
+DATALOADER_WORKERS: 3
 INPUT:
   HEIGHT: 320
   WIDTH: 320
   CHANNELS: 3
 
+
 OUTPUT:
   CLASSES: 2
 
 
+  #MODEL:
+
+
 #TRAINING_HYPER_PARAMETERS:
 HYPER_PARAMETERS:
-  BATCH_SIZE: 5
   EPOCHS: 5
-  LEARNING_RATE: 3e-4  # 1e-3 # 0.001 # 3e-4
+  BATCH_SIZE: 5
+  LEARNING_RATE: 1e-3
+
+
+CALLBACKS:
+  TENSORBOARD:
+    TB_LOG_PATH: "/checkpoint/tb_logs"
+
+  EARLY_STOPPING:
+    PATIENCE: 20
+
+  MODEL_CHECKPOINT:
+    CHECKPOINT_PATH: "/checkpoint"
+    SAVE_WEIGHTS_ONLY: True
+    SAVE_BEST_ONLY: True
 
 
 PREPROCESS_DATA:
+  #  RESIZE_IMAGE: False  # if True, resize to input height and width
   RESIZE:
     VALUE: False
     HEIGHT: None
     WIDTH: None
 
-  COLOR_CODE: RGB
-  PREPROCESSING_TYPE: "normalize"
+  IMAGE_PREPROCESSING_TYPE: "normalize"
 
   NORMALIZE_MASK:
     VALUE: FALSE
     NORMALIZE_VALUE: 255
+
+  SHUFFLE:
+    TRAIN:
+      VALUE: True
+    VAL:
+      VALUE: False
 
 
 
