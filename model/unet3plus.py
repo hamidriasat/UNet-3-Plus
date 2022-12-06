@@ -130,7 +130,7 @@ def tiny_unet_3plus(input_shape, output_channels):
     """ Encoder"""
     # block 1
     e1 = conv_block(input_layer, filters[0])  # 320*320*64
-    e1 = conv_block(e1, filters[1])  # 320*320*128
+    e1 = conv_block(e1, filters[0])  # 320*320*64
 
     # last layer does not have batch norm and relu
     d = conv_block(e1, output_channels, n=1, is_bn=False, is_relu=False)

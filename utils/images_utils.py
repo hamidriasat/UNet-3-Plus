@@ -1,6 +1,5 @@
 import numpy as np
 import cv2
-from PIL import Image
 
 
 def read_image(img_path, color_mode):

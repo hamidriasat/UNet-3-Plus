@@ -27,14 +27,8 @@ class DataGenerator(tf.keras.utils.Sequence):
                 self.cfg.DATASET[mode].IMAGES_PATH
             )
         )  # has only images name not full path
-        self.mask_paths = os.listdir(
-            join_paths(
-                self.cfg.WORK_DIR,
-                self.cfg.DATASET[mode].MASK_PATH
-            )
-        )  # has only images name not full path
+
         self.images_paths.sort()
-        self.mask_paths.sort()
 
         self.on_epoch_end()
 
@@ -99,13 +93,15 @@ class DataGenerator(tf.keras.utils.Sequence):
             # Read an image from folder and resize
             img_path = join_paths(
                 self.cfg.WORK_DIR,
-                self.cfg.DATASET.TRAIN.IMAGES_PATH,
+                self.cfg.DATASET[self.mode].IMAGES_PATH,
                 self.images_paths[index]
             )
+            # image name--> image_28_0.png
+            # mask name--> mask_28_0.png,
             mask_path = join_paths(
                 self.cfg.WORK_DIR,
-                self.cfg.DATASET.TRAIN.MASK_PATH,
-                self.mask_paths[index]
+                self.cfg.DATASET[self.mode].MASK_PATH,
+                self.images_paths[index].replace('image', 'mask')
             )
 
             image = prepare_image(

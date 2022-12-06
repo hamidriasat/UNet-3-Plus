@@ -11,6 +11,7 @@ from tensorflow.keras.callbacks import (
     TensorBoard
 )
 
+from data_preparation.verify_data import verify_data
 from utils.general_utils import create_directory, join_paths
 from model.unet3plus import unet_3plus, tiny_unet_3plus
 from losses.loss import dice_coef
@@ -44,14 +45,18 @@ def create_model(cfg: DictConfig):
 
 
 def train(cfg: DictConfig):
-    # create_training_folders(cfg)
+    print("Verifying data ...")
+    verify_data(cfg)
+
+    create_training_folders(cfg)
 
     train_generator = data_generator.DataGenerator(cfg, mode="TRAIN")
     val_generator = data_generator.DataGenerator(cfg, mode="VAL")
-    # in case of Sequence generator use for loop
-    # for i, (temp_batch_img, temp_batch_mask) in enumerate(train_generator):
-    #     print(len(temp_batch_img))
-    #     if i >= 3: break
+
+    # verify generator
+    for i, (temp_batch_img, temp_batch_mask) in enumerate(val_generator):
+        print(len(temp_batch_img))
+        if i >= 3: break
 
     model = create_model(cfg)
     # model.summary()
@@ -70,24 +75,29 @@ def train(cfg: DictConfig):
         cfg.CALLBACKS.TENSORBOARD.TB_LOG_PATH,
         "{}".format(datetime.now().strftime("%Y.%m.%d.%H.%M.%S"))
     )
-    print("TensorBoard Directory\n" + tb_log_dir)
+    print("TensorBoard directory\n" + tb_log_dir)
+
+    checkpoint_path = join_paths(
+        cfg.WORK_DIR,
+        cfg.CALLBACKS.MODEL_CHECKPOINT.CHECKPOINT_PATH,
+        'model-{epoch:03d}.hdf5'
+    )
+    print("Weights Directory\n" + checkpoint_path)
 
     callbacks = [
         TensorBoard(log_dir=tb_log_dir, write_graph=False, profile_batch=0),
         EarlyStopping(
             patience=cfg.CALLBACKS.EARLY_STOPPING.PATIENCE,
-            verbose=1
+            verbose=cfg.VERBOSE
         ),
         ModelCheckpoint(
-            join_paths(
-                cfg.WORK_DIR,
-                cfg.CALLBACKS.MODEL_CHECKPOINT.CHECKPOINT_PATH
-            ),
-            verbose=1,
+            checkpoint_path,
+            verbose=cfg.VERBOSE,
             save_weights_only=cfg.CALLBACKS.MODEL_CHECKPOINT.SAVE_WEIGHTS_ONLY,
             save_best_only=cfg.CALLBACKS.MODEL_CHECKPOINT.SAVE_BEST_ONLY,
-            monitor="val_loss",
-            mode="min"
+            monitor="val_dice_coef",
+            mode="max"
+
         )
     ]
     training_steps = int(
@@ -109,11 +119,8 @@ def train(cfg: DictConfig):
         epochs=cfg.HYPER_PARAMETERS.EPOCHS,
         batch_size=cfg.HYPER_PARAMETERS.BATCH_SIZE,
         callbacks=callbacks,
-        workers=3,
+        workers=cfg.DATALOADER_WORKERS,
     )
-
-
-print("Done")
 
 
 @hydra.main(version_base=None, config_path="configs", config_name="config")
