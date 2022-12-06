@@ -54,9 +54,9 @@ def train(cfg: DictConfig):
     val_generator = data_generator.DataGenerator(cfg, mode="VAL")
 
     # verify generator
-    for i, (temp_batch_img, temp_batch_mask) in enumerate(val_generator):
-        print(len(temp_batch_img))
-        if i >= 3: break
+    # for i, (temp_batch_img, temp_batch_mask) in enumerate(val_generator):
+    #     print(len(temp_batch_img))
+    #     if i >= 3: break
 
     model = create_model(cfg)
     # model.summary()
@@ -100,16 +100,9 @@ def train(cfg: DictConfig):
 
         )
     ]
-    training_steps = int(
-        np.floor(
-            len(train_generator.images_paths) / cfg.HYPER_PARAMETERS.BATCH_SIZE
-        )
-    )
-    validation_steps = int(
-        np.floor(
-            len(val_generator.images_paths) / cfg.HYPER_PARAMETERS.BATCH_SIZE
-        )
-    )
+
+    training_steps = train_generator.__len__()
+    validation_steps = val_generator.__len__()
 
     model.fit(
         x=train_generator,
