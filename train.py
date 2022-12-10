@@ -118,8 +118,8 @@ def train(cfg: DictConfig):
 
 @hydra.main(version_base=None, config_path="configs", config_name="config")
 def main(cfg: DictConfig):
-    # print(OmegaConf.load(cfg))
-    train(cfg)
+    print(OmegaConf.to_yaml(cfg))
+    # train(cfg)
 
 
 if __name__ == "__main__":

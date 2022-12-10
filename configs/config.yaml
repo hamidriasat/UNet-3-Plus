@@ -1,12 +1,13 @@
-WORK_DIR: "H:/Projects/UNet3P/"
+#WORK_DIR: "H:/Projects/UNet3P/"
+WORK_DIR: ${hydra:runtime.cwd}
 
 DATA_PREPARATION:
   # unprocessed scan data paths
   SCANS_TRAIN_DATA_PATH: "/data/Training Batch 2/"
   SCANS_VAL_DATA_PATH: "/data/Training Batch 1/"
 
-  RESIZED_HEIGHT: 320
-  RESIZED_WIDTH: 320
+  RESIZED_HEIGHT: ${INPUT.HEIGHT}
+  RESIZED_WIDTH: ${INPUT.WIDTH}
 
   SCAN_MIN_VALUE: -200
   SCAN_MAX_VALUE: 250
@@ -24,7 +25,7 @@ VERBOSE: 1
 DATALOADER_WORKERS: 3  # workers used for data loading
 
 INPUT:
-  HEIGHT: 320
+  HEIGHT: 40
   WIDTH: 320
   CHANNELS: 3
 
@@ -60,9 +61,9 @@ CALLBACKS:
 PREPROCESS_DATA:
   #  RESIZE_IMAGE: False  # if True, resize to input height and width
   RESIZE:
-    VALUE: False
-    HEIGHT: None
-    WIDTH: None
+    VALUE: False  # if True, resize to input height and width
+    HEIGHT: ${INPUT.HEIGHT}
+    WIDTH: ${INPUT.WIDTH}
 
   IMAGE_PREPROCESSING_TYPE: "normalize"
 

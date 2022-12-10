@@ -19,6 +19,7 @@ class DataGenerator(tf.keras.utils.Sequence):
         self.cfg = cfg
         self.mode = mode
         self.batch_size = self.cfg.HYPER_PARAMETERS.BATCH_SIZE
+        # TODO seed from config file
         np.random.seed(5)
 
         self.images_paths = os.listdir(
