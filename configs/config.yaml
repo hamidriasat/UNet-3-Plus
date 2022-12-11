@@ -20,12 +20,12 @@ DATASET:
     IMAGES_PATH: "/data/val/images"
     MASK_PATH: "/data/val/mask"
 
-
+SEED: 5
 VERBOSE: 1
-DATALOADER_WORKERS: 3  # workers used for data loading
+DATALOADER_WORKERS: 3  # number of workers used for data loading
 
 INPUT:
-  HEIGHT: 40
+  HEIGHT: 320
   WIDTH: 320
   CHANNELS: 3
 
@@ -57,6 +57,10 @@ CALLBACKS:
     SAVE_WEIGHTS_ONLY: True
     SAVE_BEST_ONLY: True
 
+  CSV_LOGGER:
+    CSV_LOG_PATH: "/checkpoint"
+    APPEND_LOGS: False
+
 
 PREPROCESS_DATA:
   #  RESIZE_IMAGE: False  # if True, resize to input height and width
@@ -76,6 +80,10 @@ PREPROCESS_DATA:
       VALUE: True
     VAL:
       VALUE: False
+
+USE_MULTI_GPUS:
+  VALUE: True
+  GPU_IDS: [1, 2]
 
 
 # to stop hydra from storing logs files

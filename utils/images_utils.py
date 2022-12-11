@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+from omegaconf import DictConfig
 
 
 def read_image(img_path, color_mode):
@@ -13,7 +14,7 @@ def resize_image(img, height, width, resize_method=cv2.INTER_CUBIC):
     return cv2.resize(img, dsize=(width, height), interpolation=resize_method)
 
 
-def prepare_image(path: str, resize: dict, normalize_type: str):
+def prepare_image(path: str, resize: DictConfig, normalize_type: str):
     image = read_image(path, cv2.IMREAD_COLOR)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 

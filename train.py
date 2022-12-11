@@ -8,7 +8,8 @@ from tensorflow.keras.callbacks import (
     ReduceLROnPlateau,
     EarlyStopping,
     ModelCheckpoint,
-    TensorBoard
+    TensorBoard,
+    CSVLogger
 )
 
 from data_preparation.verify_data import verify_data
@@ -58,15 +59,40 @@ def train(cfg: DictConfig):
     #     print(len(temp_batch_img))
     #     if i >= 3: break
 
-    model = create_model(cfg)
-    # model.summary()
-
     optimizer = tf.keras.optimizers.Adam(lr=cfg.HYPER_PARAMETERS.LEARNING_RATE)
+
+    # if cfg.USE_MULTI_GPUS.VALUE:
+    #     strategy = tf.distribute.MirroredStrategy()
+    #     print('Number of devices: {}'.format(strategy.num_replicas_in_sync))
+    #     with strategy.scope():
+    #         model = create_model(cfg)
+    #         model.compile(
+    #             optimizer=optimizer,
+    #             loss=unet3p_hybrid_loss,
+    #             metrics=[dice_coef],
+    #         )
+    # else:
+    #     model = create_model(cfg)
+    #     model.compile(
+    #         optimizer=optimizer,
+    #         loss=unet3p_hybrid_loss,
+    #         metrics=[dice_coef],
+    #     )
+
+    if cfg.USE_MULTI_GPUS.VALUE:
+        strategy = tf.distribute.MirroredStrategy()
+        print('Number of devices: {}'.format(strategy.num_replicas_in_sync))
+        with strategy.scope():
+            model = create_model(cfg)
+    else:
+        model = create_model(cfg)
+
     model.compile(
         optimizer=optimizer,
         loss=unet3p_hybrid_loss,
         metrics=[dice_coef],
     )
+    # model.summary()
 
     # the tensorboard log directory will be a unique subdirectory
     # based on the start time for the run
@@ -80,10 +106,15 @@ def train(cfg: DictConfig):
     checkpoint_path = join_paths(
         cfg.WORK_DIR,
         cfg.CALLBACKS.MODEL_CHECKPOINT.CHECKPOINT_PATH,
-        'model-{epoch:03d}.hdf5'
+        'model.hdf5'
     )
     print("Weights Directory\n" + checkpoint_path)
 
+    csv_log_path = join_paths(
+        cfg.WORK_DIR,
+        cfg.CALLBACKS.CSV_LOGGER.CSV_LOG_PATH,
+        'training.csv'
+    )
     callbacks = [
         TensorBoard(log_dir=tb_log_dir, write_graph=False, profile_batch=0),
         EarlyStopping(
@@ -98,6 +129,10 @@ def train(cfg: DictConfig):
             monitor="val_dice_coef",
             mode="max"
 
+        ),
+        CSVLogger(
+            csv_log_path,
+            append=cfg.CALLBACKS.CSV_LOGGER.APPEND_LOGS
         )
     ]
 
@@ -118,8 +153,8 @@ def train(cfg: DictConfig):
 
 @hydra.main(version_base=None, config_path="configs", config_name="config")
 def main(cfg: DictConfig):
-    print(OmegaConf.to_yaml(cfg))
-    # train(cfg)
+    # print(OmegaConf.to_yaml(cfg))
+    train(cfg)
 
 
 if __name__ == "__main__":
