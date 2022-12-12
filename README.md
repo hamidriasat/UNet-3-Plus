@@ -7,5 +7,12 @@ This branch will contain code to reproduce UNet3+ results on [LiTS - Liver Tumor
 
 This branch is in development mode.
 
+TODO List
+- Add augment option
+- Load different models
+- NVIDIA DALI
+- Visualization
+
+
 
 Licensed under [MIT License](LICENSE)

@@ -3,6 +3,7 @@ __pycache__
 
 checkpoint/tb_logs/*
 checkpoint/*.hdf5
+checkpoint/training.csv
 !checkpoint/tb_logs/.gitkeep
 
 #data/*

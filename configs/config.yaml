@@ -82,8 +82,13 @@ PREPROCESS_DATA:
       VALUE: False
 
 USE_MULTI_GPUS:
-  VALUE: True
-  GPU_IDS: [1, 2]
+  VALUE: False
+  # GPU_IDS: Could be integer or list of integers.
+  # In case Integer: if integer value is -1 then use all available gpus.
+  # otherwise if positive number, then use given number of gpus.
+  # In case list of Integer: each integer will be considered as gpu id
+  # e.g. [4, 5, 7] means use gpu 5,6 and 8 for training
+  GPU_IDS: -1
 
 
 # to stop hydra from storing logs files

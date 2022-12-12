@@ -42,3 +42,13 @@ def prepare_mask(path: str, resize: dict, normalize_mask: dict):
     mask = mask.astype(np.int32)
 
     return mask
+
+
+def postprocess_mask(mask):
+    mask = np.argmax(mask, axis=-1)
+    return mask.astype(np.int32)
+
+
+def denormalize_mask(mask, classes):
+    mask = mask * (255 / classes)
+    return mask.astype(np.int32)

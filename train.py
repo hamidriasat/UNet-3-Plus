@@ -1,19 +1,17 @@
 from datetime import datetime
 import hydra
-import numpy as np
-import tensorflow as tf
-import data_generator
 from omegaconf import DictConfig, OmegaConf
+import tensorflow as tf
 from tensorflow.keras.callbacks import (
-    ReduceLROnPlateau,
     EarlyStopping,
     ModelCheckpoint,
     TensorBoard,
     CSVLogger
 )
 
+import data_generator
 from data_preparation.verify_data import verify_data
-from utils.general_utils import create_directory, join_paths
+from utils.general_utils import create_directory, join_paths, set_gpus
 from model.unet3plus import unet_3plus, tiny_unet_3plus
 from losses.loss import dice_coef
 from losses.unet_loss import unet3p_hybrid_loss
@@ -49,39 +47,26 @@ def train(cfg: DictConfig):
     print("Verifying data ...")
     verify_data(cfg)
 
+    if cfg.USE_MULTI_GPUS.VALUE:
+        set_gpus(cfg.USE_MULTI_GPUS.GPU_IDS)
+
     create_training_folders(cfg)
 
     train_generator = data_generator.DataGenerator(cfg, mode="TRAIN")
     val_generator = data_generator.DataGenerator(cfg, mode="VAL")
 
     # verify generator
-    # for i, (temp_batch_img, temp_batch_mask) in enumerate(val_generator):
-    #     print(len(temp_batch_img))
+    # for i, (batch_images, batch_mask) in enumerate(val_generator):
+    #     print(len(batch_images))
     #     if i >= 3: break
 
     optimizer = tf.keras.optimizers.Adam(lr=cfg.HYPER_PARAMETERS.LEARNING_RATE)
 
-    # if cfg.USE_MULTI_GPUS.VALUE:
-    #     strategy = tf.distribute.MirroredStrategy()
-    #     print('Number of devices: {}'.format(strategy.num_replicas_in_sync))
-    #     with strategy.scope():
-    #         model = create_model(cfg)
-    #         model.compile(
-    #             optimizer=optimizer,
-    #             loss=unet3p_hybrid_loss,
-    #             metrics=[dice_coef],
-    #         )
-    # else:
-    #     model = create_model(cfg)
-    #     model.compile(
-    #         optimizer=optimizer,
-    #         loss=unet3p_hybrid_loss,
-    #         metrics=[dice_coef],
-    #     )
-
     if cfg.USE_MULTI_GPUS.VALUE:
-        strategy = tf.distribute.MirroredStrategy()
-        print('Number of devices: {}'.format(strategy.num_replicas_in_sync))
+        strategy = tf.distribute.MirroredStrategy(
+            cross_device_ops=tf.distribute.HierarchicalCopyAllReduce()
+        )
+        print('Number of visible gpu devices: {}'.format(strategy.num_replicas_in_sync))
         with strategy.scope():
             model = create_model(cfg)
     else:
@@ -106,6 +91,7 @@ def train(cfg: DictConfig):
     checkpoint_path = join_paths(
         cfg.WORK_DIR,
         cfg.CALLBACKS.MODEL_CHECKPOINT.CHECKPOINT_PATH,
+        # 'model-epoch_{epoch:03d}-val_dice_coef{val_dice_coef:.3f}.hdf5',
         'model.hdf5'
     )
     print("Weights Directory\n" + checkpoint_path)
