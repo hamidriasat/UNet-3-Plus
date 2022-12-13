@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 from omegaconf import DictConfig
+import matplotlib.pyplot as plt
 
 
 def read_image(img_path, color_mode):
@@ -52,3 +53,29 @@ def postprocess_mask(mask):
 def denormalize_mask(mask, classes):
     mask = mask * (255 / classes)
     return mask.astype(np.int32)
+
+
+def display(display_list, show_true_mask=False):
+    """
+    Show list of images. it could be
+    either [image, true_mask, predicted_mask] or [image, predicted_mask].
+    Set show_true_mask to True if true mask is available or vice versa
+    """
+    if show_true_mask:
+        title_list = ('Input Image', 'True Mask', 'Predicted Mask')
+        plt.figure(figsize=(12, 4))
+    else:
+        title_list = ('Input Image', 'Predicted Mask')
+        plt.figure(figsize=(8, 4))
+
+    for i in range(len(display_list)):
+        plt.subplot(1, len(display_list), i + 1)
+        if title_list is not None:
+            plt.title(title_list[i])
+        if len(np.squeeze(display_list[i]).shape) == 2:
+            plt.imshow(np.squeeze(display_list[i]), cmap='gray')
+            plt.axis('on')
+        else:
+            plt.imshow(np.squeeze(display_list[i]))
+            plt.axis('on')
+    plt.show()

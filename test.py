@@ -1,11 +1,10 @@
 import hydra
 from omegaconf import DictConfig
 import numpy as np
-import tensorflow as tf
-import matplotlib.pyplot as plt
 
 import data_generator
 from utils.general_utils import join_paths
+from utils.images_utils import display
 from utils.images_utils import postprocess_mask, denormalize_mask
 from model.unet3plus import unet_3plus, tiny_unet_3plus
 
@@ -19,24 +18,6 @@ def create_model(cfg: DictConfig):
         ],
         cfg.OUTPUT.CLASSES
     )
-
-
-title = ['Input Image', 'True Mask', 'Predicted Mask']
-
-
-def display(display_list, titlelist=title):
-    plt.figure(figsize=(12, 4))
-
-    for i in range(len(display_list)):
-        plt.subplot(1, len(display_list), i + 1)
-        plt.title(titlelist[i])
-        if len(np.squeeze(display_list[i]).shape) == 2:
-            plt.imshow(np.squeeze(display_list[i]), cmap='gray')
-            plt.axis('on')
-        else:
-            plt.imshow(np.squeeze(display_list[i]))
-            plt.axis('on')
-    plt.show()
 
 
 def predict(cfg: DictConfig):
@@ -59,15 +40,23 @@ def predict(cfg: DictConfig):
         for image, mask, prediction in zip(
                 batch_images, batch_mask, batch_predictions):
             mask = postprocess_mask(mask)
+            # denormalize mask for better visualization
             mask = denormalize_mask(mask, cfg.OUTPUT.CLASSES)
 
             prediction = postprocess_mask(prediction)
             prediction = denormalize_mask(prediction, cfg.OUTPUT.CLASSES)
 
-            if np.unique(mask).shape[0] == 2:
-                display([image[:, :, 1], mask, prediction])
+            if cfg.SHOW_CENTER_CHANNEL_IMAGE:
+                # for UNet3+ show only center channel as image
+                image = image[:, :, 1]
+
+            # display only those mask which has some nonzero values
+            # if np.unique(mask).shape[0] == 2:
+            #     display([image, mask, prediction], show_true_mask=True)
+            display([image, mask, prediction], show_true_mask=True)
 
             showed_images += 1
+        # stop after displaying below number of images
         # if showed_images >= 30: break
 
 

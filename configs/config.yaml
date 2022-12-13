@@ -23,6 +23,7 @@ DATASET:
 SEED: 5
 VERBOSE: 1
 DATALOADER_WORKERS: 3  # number of workers used for data loading
+SHOW_CENTER_CHANNEL_IMAGE: True  # only true for UNet3+ otherwise false
 
 INPUT:
   HEIGHT: 320
