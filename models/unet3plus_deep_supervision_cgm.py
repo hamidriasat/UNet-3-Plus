@@ -3,14 +3,14 @@
 # ------------------------------------------------------------------------------
 import tensorflow as tf
 import tensorflow.keras as k
-from .unet3plus_utils import conv_block
+from .unet3plus_utils import conv_block, dot_product
 
 
-def unet_3plus(input_shape, output_channels):
-    """ UNet_3Plus """
+def unet3plus_deepsup_cgm(INPUT_SHAPE, OUTPUT_CHANNELS):
+    """ UNet_3Plus with Deep Supervision and Classification Guided Module """
     filters = [64, 128, 256, 512, 1024]
 
-    input_layer = k.layers.Input(shape=input_shape, name="input_layer")  # 320*320*3
+    input_layer = k.layers.Input(shape=INPUT_SHAPE, name="input_layer")  # 320*320*3
 
     """ Encoder"""
     # block 1
@@ -28,10 +28,18 @@ def unet_3plus(input_shape, output_channels):
     e4 = k.layers.MaxPool2D(pool_size=(2, 2))(e3)  # 40*40*256
     e4 = conv_block(e4, filters[3])  # 40*40*512
 
-    # block 5
-    # bottleneck layer
+    # block 5, bottleneck layer
     e5 = k.layers.MaxPool2D(pool_size=(2, 2))(e4)  # 20*20*512
     e5 = conv_block(e5, filters[4])  # 20*20*1024
+
+    """ Classification Guided Module. Part 1"""
+    cls = k.layers.Dropout(rate=0.5)(e5)
+    cls = k.layers.Conv2D(2, kernel_size=(1, 1), padding="same", strides=(1, 1))(cls)
+    cls = k.layers.GlobalMaxPooling2D()(cls)
+    cls = k.activations.sigmoid(cls)
+    cls = tf.argmax(cls, axis=-1)
+    cls = cls[..., tf.newaxis]
+    cls = tf.cast(cls, dtype=tf.float32, )
 
     """ Decoder """
     cat_channels = filters[0]
@@ -110,37 +118,34 @@ def unet_3plus(input_shape, output_channels):
     d1 = k.layers.concatenate([e1_d1, d2_d1, d3_d1, d4_d1, e5_d1, ])
     d1 = conv_block(d1, upsample_channels, n=1)  # 320*320*320 --> 320*320*320
 
+    """ Deep Supervision Part"""
     # last layer does not have batchnorm and relu
-    d = conv_block(d1, output_channels, n=1, is_bn=False, is_relu=False)
+    d1 = conv_block(d1, OUTPUT_CHANNELS, n=1, is_bn=False, is_relu=False)
+    d2 = conv_block(d2, OUTPUT_CHANNELS, n=1, is_bn=False, is_relu=False)
+    d3 = conv_block(d3, OUTPUT_CHANNELS, n=1, is_bn=False, is_relu=False)
+    d4 = conv_block(d4, OUTPUT_CHANNELS, n=1, is_bn=False, is_relu=False)
+    e5 = conv_block(e5, OUTPUT_CHANNELS, n=1, is_bn=False, is_relu=False)
 
-    if output_channels == 1:
-        output = k.activations.sigmoid(d)
-    else:
-        output = k.activations.softmax(d)
+    # d1 = no need for upsampling
+    d2 = k.layers.UpSampling2D(size=(2, 2), interpolation='bilinear')(d2)
+    d3 = k.layers.UpSampling2D(size=(4, 4), interpolation='bilinear')(d3)
+    d4 = k.layers.UpSampling2D(size=(8, 8), interpolation='bilinear')(d4)
+    e5 = k.layers.UpSampling2D(size=(16, 16), interpolation='bilinear')(e5)
 
-    return tf.keras.Model(inputs=input_layer, outputs=output, name='UNet_3Plus')
+    """ Classification Guided Module. Part 2"""
+    d1 = dot_product(d1, cls)
+    d2 = dot_product(d2, cls)
+    d3 = dot_product(d3, cls)
+    d4 = dot_product(d4, cls)
+    e5 = dot_product(e5, cls)
 
+    d1 = k.activations.sigmoid(d1)
+    d2 = k.activations.sigmoid(d2)
+    d3 = k.activations.sigmoid(d3)
+    d4 = k.activations.sigmoid(d4)
+    e5 = k.activations.sigmoid(e5)
 
-def tiny_unet_3plus(input_shape, output_channels):
-    """ Sample model for testing during development """
-    filters = [64, 128, 256, 512, 1024]
-
-    input_layer = k.layers.Input(shape=input_shape, name="input_layer")  # 320*320*3
-
-    """ Encoder"""
-    # block 1
-    e1 = conv_block(input_layer, filters[0])  # 320*320*64
-    e1 = conv_block(e1, filters[0])  # 320*320*64
-
-    # last layer does not have batch norm and relu
-    d = conv_block(e1, output_channels, n=1, is_bn=False, is_relu=False)
-
-    if output_channels == 1:
-        output = k.activations.sigmoid(d)
-    else:
-        output = k.activations.softmax(d)
-
-    return tf.keras.Model(inputs=input_layer, outputs=output, name='UNet_3Plus')
+    return tf.keras.Model(inputs=input_layer, outputs=[d1, d2, d3, d4, e5, cls], name='UNet3Plus_DeepSup_CGM')
 
 
 if __name__ == "__main__":
@@ -148,7 +153,7 @@ if __name__ == "__main__":
     INPUT_SHAPE = [320, 320, 1]
     OUTPUT_CHANNELS = 1
 
-    unet_3P = unet_3plus(INPUT_SHAPE, OUTPUT_CHANNELS)
+    unet_3P = unet3plus_deepsup_cgm(INPUT_SHAPE, OUTPUT_CHANNELS)
     unet_3P.summary()
 
     # tf.keras.utils.plot_model(unet_3P, show_layer_names=True, show_shapes=True)

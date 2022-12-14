@@ -4,20 +4,9 @@ import tensorflow as tf
 
 import data_generator
 from utils.general_utils import join_paths, set_gpus
-from model.unet3plus import unet_3plus, tiny_unet_3plus
+from models.model import prepare_model
 from losses.loss import dice_coef
 from losses.unet_loss import unet3p_hybrid_loss
-
-
-def create_model(cfg: DictConfig):
-    return tiny_unet_3plus(
-        [
-            cfg.INPUT.HEIGHT,
-            cfg.INPUT.WIDTH,
-            cfg.INPUT.CHANNELS,
-        ],
-        cfg.OUTPUT.CLASSES
-    )
 
 
 def evaluate(cfg: DictConfig):
@@ -33,9 +22,9 @@ def evaluate(cfg: DictConfig):
         )
         print('Number of visible gpu devices: {}'.format(strategy.num_replicas_in_sync))
         with strategy.scope():
-            model = create_model(cfg)
+            model = prepare_model(cfg)
     else:
-        model = create_model(cfg)
+        model = prepare_model(cfg)
 
     model.compile(
         optimizer=optimizer,
@@ -46,12 +35,15 @@ def evaluate(cfg: DictConfig):
     checkpoint_path = join_paths(
         cfg.WORK_DIR,
         cfg.CALLBACKS.MODEL_CHECKPOINT.CHECKPOINT_PATH,
-        # 'model-epoch_{epoch:03d}-val_dice_coef{val_dice_coef:.3f}.hdf5',
-        'model.hdf5'
+        f"{cfg.MODEL.WEIGHTS_FILE_NAME}.hdf5"
     )
-    # model = tf.keras.models.load_model(checkpoint_path)
-    model.load_weights(checkpoint_path)
+    # TODO: verify without augment it produces same results
+    model.load_weights(checkpoint_path, by_name=True, skip_mismatch=True)
     # model.summary()
+
+    evaluation_metric = "dice_coef"
+    if len(model.outputs) > 1:
+        evaluation_metric = f"{model.output_names[0]}_dice_coef"
 
     result = model.evaluate(
         x=val_generator,
@@ -60,12 +52,14 @@ def evaluate(cfg: DictConfig):
         return_dict=True,
     )
 
-    return result
+    return result, evaluation_metric
 
 
 @hydra.main(version_base=None, config_path="configs", config_name="config")
 def main(cfg: DictConfig):
-    print(evaluate(cfg))
+    result, evaluation_metric = evaluate(cfg)
+    print(result)
+    print(f"Validation accuracy: {result[evaluation_metric]}")
 
 
 if __name__ == "__main__":

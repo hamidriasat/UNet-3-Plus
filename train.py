@@ -12,7 +12,7 @@ from tensorflow.keras.callbacks import (
 import data_generator
 from data_preparation.verify_data import verify_data
 from utils.general_utils import create_directory, join_paths, set_gpus
-from model.unet3plus import unet_3plus, tiny_unet_3plus
+from models.model import prepare_model
 from losses.loss import dice_coef
 from losses.unet_loss import unet3p_hybrid_loss
 
@@ -29,17 +29,6 @@ def create_training_folders(cfg: DictConfig):
             cfg.WORK_DIR,
             cfg.CALLBACKS.TENSORBOARD.TB_LOG_PATH
         )
-    )
-
-
-def create_model(cfg: DictConfig):
-    return tiny_unet_3plus(
-        [
-            cfg.INPUT.HEIGHT,
-            cfg.INPUT.WIDTH,
-            cfg.INPUT.CHANNELS,
-        ],
-        cfg.OUTPUT.CLASSES
     )
 
 
@@ -68,16 +57,16 @@ def train(cfg: DictConfig):
         )
         print('Number of visible gpu devices: {}'.format(strategy.num_replicas_in_sync))
         with strategy.scope():
-            model = create_model(cfg)
+            model = prepare_model(cfg)
     else:
-        model = create_model(cfg)
+        model = prepare_model(cfg)
 
     model.compile(
         optimizer=optimizer,
         loss=unet3p_hybrid_loss,
         metrics=[dice_coef],
     )
-    # model.summary()
+    model.summary()
 
     # the tensorboard log directory will be a unique subdirectory
     # based on the start time for the run
@@ -91,16 +80,21 @@ def train(cfg: DictConfig):
     checkpoint_path = join_paths(
         cfg.WORK_DIR,
         cfg.CALLBACKS.MODEL_CHECKPOINT.CHECKPOINT_PATH,
-        # 'model-epoch_{epoch:03d}-val_dice_coef{val_dice_coef:.3f}.hdf5',
-        'model.hdf5'
+        f"{cfg.MODEL.WEIGHTS_FILE_NAME}.hdf5"
     )
-    print("Weights Directory\n" + checkpoint_path)
+    print("Weights path\n" + checkpoint_path)
 
     csv_log_path = join_paths(
         cfg.WORK_DIR,
         cfg.CALLBACKS.CSV_LOGGER.CSV_LOG_PATH,
-        'training.csv'
+        f"training_logs_{cfg.MODEL.TYPE}.csv"
     )
+    print("Logs path\n" + csv_log_path)
+
+    evaluation_metric = "val_dice_coef"
+    if len(model.outputs) > 1:
+        evaluation_metric = f"val_{model.output_names[0]}_dice_coef"
+
     callbacks = [
         TensorBoard(log_dir=tb_log_dir, write_graph=False, profile_batch=0),
         EarlyStopping(
@@ -112,7 +106,7 @@ def train(cfg: DictConfig):
             verbose=cfg.VERBOSE,
             save_weights_only=cfg.CALLBACKS.MODEL_CHECKPOINT.SAVE_WEIGHTS_ONLY,
             save_best_only=cfg.CALLBACKS.MODEL_CHECKPOINT.SAVE_BEST_ONLY,
-            monitor="val_dice_coef",
+            monitor=evaluation_metric,
             mode="max"
 
         ),

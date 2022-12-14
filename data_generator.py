@@ -21,14 +21,18 @@ class DataGenerator(tf.keras.utils.Sequence):
         self.batch_size = self.cfg.HYPER_PARAMETERS.BATCH_SIZE
         np.random.seed(cfg.SEED)
 
-        self.images_paths = os.listdir(
-            join_paths(
-                self.cfg.WORK_DIR,
-                self.cfg.DATASET[mode].IMAGES_PATH
-            )
-        )  # has only images name not full path
+        if isinstance(self.cfg.DATASET[mode].IMAGES_PATH, str):
+            self.images_paths = os.listdir(
+                join_paths(
+                    self.cfg.WORK_DIR,
+                    self.cfg.DATASET[mode].IMAGES_PATH
+                )
+            )  # has only images name not full path
+        else:
+            # full path of images
+            self.images_paths = self.cfg.DATASET[mode].IMAGES_PATH
 
-        self.images_paths.sort()
+            # self.images_paths.sort()  # no need for sorting
 
         self.on_epoch_end()
 
@@ -91,18 +95,23 @@ class DataGenerator(tf.keras.utils.Sequence):
 
         for i, index in enumerate(indexes):
             # Read an image from folder and resize
-            img_path = join_paths(
-                self.cfg.WORK_DIR,
-                self.cfg.DATASET[self.mode].IMAGES_PATH,
-                self.images_paths[index]
-            )
-            # image name--> image_28_0.png
-            # mask name--> mask_28_0.png,
-            mask_path = join_paths(
-                self.cfg.WORK_DIR,
-                self.cfg.DATASET[self.mode].MASK_PATH,
-                self.images_paths[index].replace('image', 'mask')
-            )
+
+            if isinstance(self.cfg.DATASET[self.mode].IMAGES_PATH, str):
+                img_path = join_paths(
+                    self.cfg.WORK_DIR,
+                    self.cfg.DATASET[self.mode].IMAGES_PATH,
+                    self.images_paths[index]
+                )
+                # image name--> image_28_0.png
+                # mask name--> mask_28_0.png,
+                mask_path = join_paths(
+                    self.cfg.WORK_DIR,
+                    self.cfg.DATASET[self.mode].MASK_PATH,
+                    self.images_paths[index].replace('image', 'mask')
+                )
+            else:
+                img_path = self.images_paths[int(index)]
+                mask_path = self.images_paths[int(index)]
 
             image = prepare_image(
                 img_path,

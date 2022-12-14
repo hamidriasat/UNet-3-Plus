@@ -1,4 +1,3 @@
-#WORK_DIR: "H:/Projects/UNet3P/"
 WORK_DIR: ${hydra:runtime.cwd}
 
 DATA_PREPARATION:
@@ -20,6 +19,12 @@ DATASET:
     IMAGES_PATH: "/data/val/images"
     MASK_PATH: "/data/val/mask"
 
+
+MODEL:
+  # tiny_unet3plus, unet3plus, unet3plus_deepsup, unet3plus_deepsup_cgm
+  TYPE: "tiny_unet3plus"
+  WEIGHTS_FILE_NAME: model_${MODEL.TYPE}
+
 SEED: 5
 VERBOSE: 1
 DATALOADER_WORKERS: 3  # number of workers used for data loading
@@ -33,10 +38,6 @@ INPUT:
 
 OUTPUT:
   CLASSES: 2
-
-
-#MODEL:
-#  WEIGHTS_PATH: "/checkpoint"
 
 
 #TRAINING_HYPER_PARAMETERS:
