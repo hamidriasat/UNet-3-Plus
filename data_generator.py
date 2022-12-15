@@ -32,6 +32,10 @@ class DataGenerator(tf.keras.utils.Sequence):
             # full path of images
             self.images_paths = self.cfg.DATASET[mode].IMAGES_PATH
 
+        self.mask_available = True
+        if self.cfg.DATASET.VAL.MASK_PATH is None:
+            self.mask_available = False
+
             # self.images_paths.sort()  # no need for sorting
 
         self.on_epoch_end()
@@ -67,9 +71,7 @@ class DataGenerator(tf.keras.utils.Sequence):
                   ]
 
         # Generate data
-        X, y = self.__data_generation(indexes)
-
-        return X, y
+        return self.__data_generation(indexes)
 
     def __data_generation(self, indexes):
         """
@@ -84,14 +86,16 @@ class DataGenerator(tf.keras.utils.Sequence):
                 self.cfg.INPUT.CHANNELS
             )
         ).astype(np.float32)
-        batch_masks = np.zeros(
-            (
-                self.cfg.HYPER_PARAMETERS.BATCH_SIZE,
-                self.cfg.INPUT.HEIGHT,
-                self.cfg.INPUT.WIDTH,
-                self.cfg.OUTPUT.CLASSES
-            )
-        ).astype(np.float32)
+
+        if self.mask_available:
+            batch_masks = np.zeros(
+                (
+                    self.cfg.HYPER_PARAMETERS.BATCH_SIZE,
+                    self.cfg.INPUT.HEIGHT,
+                    self.cfg.INPUT.WIDTH,
+                    self.cfg.OUTPUT.CLASSES
+                )
+            ).astype(np.float32)
 
         for i, index in enumerate(indexes):
             # Read an image from folder and resize
@@ -102,39 +106,43 @@ class DataGenerator(tf.keras.utils.Sequence):
                     self.cfg.DATASET[self.mode].IMAGES_PATH,
                     self.images_paths[index]
                 )
-                # image name--> image_28_0.png
-                # mask name--> mask_28_0.png,
-                mask_path = join_paths(
-                    self.cfg.WORK_DIR,
-                    self.cfg.DATASET[self.mode].MASK_PATH,
-                    self.images_paths[index].replace('image', 'mask')
-                )
+                if self.mask_available:
+                    # image name--> image_28_0.png
+                    # mask name--> mask_28_0.png,
+                    mask_path = join_paths(
+                        self.cfg.WORK_DIR,
+                        self.cfg.DATASET[self.mode].MASK_PATH,
+                        self.images_paths[index].replace('image', 'mask')
+                    )
             else:
                 img_path = self.images_paths[int(index)]
-                mask_path = self.images_paths[int(index)]
+                if self.mask_available:
+                    mask_path = self.cfg.DATASET.VAL.MASK_PATH[int(index)]
 
             image = prepare_image(
                 img_path,
                 self.cfg.PREPROCESS_DATA.RESIZE,
                 self.cfg.PREPROCESS_DATA.IMAGE_PREPROCESSING_TYPE,
             )
-            mask = prepare_mask(
-                mask_path,
-                self.cfg.PREPROCESS_DATA.RESIZE,
-                self.cfg.PREPROCESS_DATA.NORMALIZE_MASK,
-            )
+            if self.mask_available:
+                mask = prepare_mask(
+                    mask_path,
+                    self.cfg.PREPROCESS_DATA.RESIZE,
+                    self.cfg.PREPROCESS_DATA.NORMALIZE_MASK,
+                )
 
-            image, mask = tf.numpy_function(
-                self.tf_func,
-                [image, mask],
-                [tf.float32, tf.int32]
-            )
-
-            mask = tf.one_hot(
-                mask,
-                self.cfg.OUTPUT.CLASSES,
-                dtype=tf.int32
-            )
+            if self.mask_available:
+                image, mask = tf.numpy_function(
+                    self.tf_func,
+                    [image, mask],
+                    [tf.float32, tf.int32]
+                )
+            else:
+                image = tf.numpy_function(
+                    self.tf_func,
+                    [image, ],
+                    [tf.float32, ]
+                )
 
             image.set_shape(
                 [
@@ -143,19 +151,28 @@ class DataGenerator(tf.keras.utils.Sequence):
                     self.cfg.INPUT.CHANNELS
                 ]
             )
-            mask.set_shape(
-                [
-                    self.cfg.INPUT.HEIGHT,
-                    self.cfg.INPUT.WIDTH,
-                    self.cfg.OUTPUT.CLASSES
-                ]
-            )
-
             batch_images[i] = image
-            batch_masks[i] = mask
 
-        return batch_images, batch_masks
+            if self.mask_available:
+                mask = tf.one_hot(
+                    mask,
+                    self.cfg.OUTPUT.CLASSES,
+                    dtype=tf.int32
+                )
+                mask.set_shape(
+                    [
+                        self.cfg.INPUT.HEIGHT,
+                        self.cfg.INPUT.WIDTH,
+                        self.cfg.OUTPUT.CLASSES
+                    ]
+                )
+                batch_masks[i] = mask
+
+        if self.mask_available:
+            return batch_images, batch_masks
+        else:
+            return batch_images,
 
     @staticmethod
-    def tf_func(x, y):
-        return x, y
+    def tf_func(*args):
+        return args

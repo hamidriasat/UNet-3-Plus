@@ -1,6 +1,6 @@
 from datetime import datetime
 import hydra
-from omegaconf import DictConfig, OmegaConf
+from omegaconf import DictConfig
 import tensorflow as tf
 from tensorflow.keras.callbacks import (
     EarlyStopping,
@@ -21,13 +21,13 @@ def create_training_folders(cfg: DictConfig):
     create_directory(
         join_paths(
             cfg.WORK_DIR,
-            cfg.CALLBACKS.MODEL_CHECKPOINT.CHECKPOINT_PATH
+            cfg.CALLBACKS.MODEL_CHECKPOINT.PATH
         )
     )
     create_directory(
         join_paths(
             cfg.WORK_DIR,
-            cfg.CALLBACKS.TENSORBOARD.TB_LOG_PATH
+            cfg.CALLBACKS.TENSORBOARD.PATH
         )
     )
 
@@ -35,6 +35,13 @@ def create_training_folders(cfg: DictConfig):
 def train(cfg: DictConfig):
     print("Verifying data ...")
     verify_data(cfg)
+
+    if cfg.MODEL.TYPE == "unet3plus_deepsup_cgm":
+        raise ValueError(
+            "UNet3+ with Deep Supervision and Classification Guided Module"
+            "\nModel exist but training script is supported for this variant"
+            "please choose other variants from config file"
+        )
 
     if cfg.USE_MULTI_GPUS.VALUE:
         set_gpus(cfg.USE_MULTI_GPUS.GPU_IDS)
@@ -57,9 +64,9 @@ def train(cfg: DictConfig):
         )
         print('Number of visible gpu devices: {}'.format(strategy.num_replicas_in_sync))
         with strategy.scope():
-            model = prepare_model(cfg)
+            model = prepare_model(cfg, training=True)
     else:
-        model = prepare_model(cfg)
+        model = prepare_model(cfg, training=True)
 
     model.compile(
         optimizer=optimizer,
@@ -72,21 +79,21 @@ def train(cfg: DictConfig):
     # based on the start time for the run
     tb_log_dir = join_paths(
         cfg.WORK_DIR,
-        cfg.CALLBACKS.TENSORBOARD.TB_LOG_PATH,
+        cfg.CALLBACKS.TENSORBOARD.PATH,
         "{}".format(datetime.now().strftime("%Y.%m.%d.%H.%M.%S"))
     )
     print("TensorBoard directory\n" + tb_log_dir)
 
     checkpoint_path = join_paths(
         cfg.WORK_DIR,
-        cfg.CALLBACKS.MODEL_CHECKPOINT.CHECKPOINT_PATH,
+        cfg.CALLBACKS.MODEL_CHECKPOINT.PATH,
         f"{cfg.MODEL.WEIGHTS_FILE_NAME}.hdf5"
     )
     print("Weights path\n" + checkpoint_path)
 
     csv_log_path = join_paths(
         cfg.WORK_DIR,
-        cfg.CALLBACKS.CSV_LOGGER.CSV_LOG_PATH,
+        cfg.CALLBACKS.CSV_LOGGER.PATH,
         f"training_logs_{cfg.MODEL.TYPE}.csv"
     )
     print("Logs path\n" + csv_log_path)
@@ -133,7 +140,6 @@ def train(cfg: DictConfig):
 
 @hydra.main(version_base=None, config_path="configs", config_name="config")
 def main(cfg: DictConfig):
-    # print(OmegaConf.to_yaml(cfg))
     train(cfg)
 
 

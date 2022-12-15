@@ -21,14 +21,14 @@ DATASET:
 
 
 MODEL:
-  # tiny_unet3plus, unet3plus, unet3plus_deepsup, unet3plus_deepsup_cgm
+  # unet3plus, unet3plus_deepsup, unet3plus_deepsup_cgm
   TYPE: "tiny_unet3plus"
   WEIGHTS_FILE_NAME: model_${MODEL.TYPE}
 
 SEED: 5
 VERBOSE: 1
 DATALOADER_WORKERS: 3  # number of workers used for data loading
-SHOW_CENTER_CHANNEL_IMAGE: True  # only true for UNet3+ otherwise false
+SHOW_CENTER_CHANNEL_IMAGE: True  # only true for UNet3+ otherwise False
 
 INPUT:
   HEIGHT: 320
@@ -49,18 +49,18 @@ HYPER_PARAMETERS:
 
 CALLBACKS:
   TENSORBOARD:
-    TB_LOG_PATH: "/checkpoint/tb_logs"
+    PATH: "/checkpoint/tb_logs"
 
   EARLY_STOPPING:
     PATIENCE: 20
 
   MODEL_CHECKPOINT:
-    CHECKPOINT_PATH: "/checkpoint"
+    PATH: "/checkpoint"
     SAVE_WEIGHTS_ONLY: True
     SAVE_BEST_ONLY: True
 
   CSV_LOGGER:
-    CSV_LOG_PATH: "/checkpoint"
+    PATH: "/checkpoint"
     APPEND_LOGS: False
 
 

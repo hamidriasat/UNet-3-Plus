@@ -34,12 +34,12 @@ def evaluate(cfg: DictConfig):
 
     checkpoint_path = join_paths(
         cfg.WORK_DIR,
-        cfg.CALLBACKS.MODEL_CHECKPOINT.CHECKPOINT_PATH,
+        cfg.CALLBACKS.MODEL_CHECKPOINT.PATH,
         f"{cfg.MODEL.WEIGHTS_FILE_NAME}.hdf5"
     )
     # TODO: verify without augment it produces same results
     model.load_weights(checkpoint_path, by_name=True, skip_mismatch=True)
-    # model.summary()
+    model.summary()
 
     evaluation_metric = "dice_coef"
     if len(model.outputs) > 1:
@@ -59,7 +59,7 @@ def evaluate(cfg: DictConfig):
 def main(cfg: DictConfig):
     result, evaluation_metric = evaluate(cfg)
     print(result)
-    print(f"Validation accuracy: {result[evaluation_metric]}")
+    print(f"Validation dice coefficient: {result[evaluation_metric]}")
 
 
 if __name__ == "__main__":

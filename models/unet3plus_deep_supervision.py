@@ -6,7 +6,7 @@ import tensorflow.keras as k
 from .unet3plus_utils import conv_block
 
 
-def unet3plus_deepsup(INPUT_SHAPE, OUTPUT_CHANNELS):
+def unet3plus_deepsup(INPUT_SHAPE, OUTPUT_CHANNELS, training=False):
     """ UNet_3Plus with Deep Supervision """
     filters = [64, 128, 256, 512, 1024]
 
@@ -110,27 +110,32 @@ def unet3plus_deepsup(INPUT_SHAPE, OUTPUT_CHANNELS):
     d1 = k.layers.concatenate([e1_d1, d2_d1, d3_d1, d4_d1, e5_d1, ])
     d1 = conv_block(d1, upsample_channels, n=1)  # 320*320*320 --> 320*320*320
 
-    """ Deep Supervision Part"""
     # last layer does not have batchnorm and relu
     d1 = conv_block(d1, OUTPUT_CHANNELS, n=1, is_bn=False, is_relu=False)
-    d2 = conv_block(d2, OUTPUT_CHANNELS, n=1, is_bn=False, is_relu=False)
-    d3 = conv_block(d3, OUTPUT_CHANNELS, n=1, is_bn=False, is_relu=False)
-    d4 = conv_block(d4, OUTPUT_CHANNELS, n=1, is_bn=False, is_relu=False)
-    e5 = conv_block(e5, OUTPUT_CHANNELS, n=1, is_bn=False, is_relu=False)
-
-    # d1 = no need for upsampling
-    d2 = k.layers.UpSampling2D(size=(2, 2), interpolation='bilinear')(d2)
-    d3 = k.layers.UpSampling2D(size=(4, 4), interpolation='bilinear')(d3)
-    d4 = k.layers.UpSampling2D(size=(8, 8), interpolation='bilinear')(d4)
-    e5 = k.layers.UpSampling2D(size=(16, 16), interpolation='bilinear')(e5)
-
     d1 = k.activations.softmax(d1)
-    d2 = k.activations.softmax(d2)
-    d3 = k.activations.softmax(d3)
-    d4 = k.activations.softmax(d4)
-    e5 = k.activations.softmax(e5)
 
-    return tf.keras.Model(inputs=input_layer, outputs=[d1, d2, d3, d4, e5], name='UNet3Plus_DeepSup')
+    """ Deep Supervision Part"""
+    if training:
+        d2 = conv_block(d2, OUTPUT_CHANNELS, n=1, is_bn=False, is_relu=False)
+        d3 = conv_block(d3, OUTPUT_CHANNELS, n=1, is_bn=False, is_relu=False)
+        d4 = conv_block(d4, OUTPUT_CHANNELS, n=1, is_bn=False, is_relu=False)
+        e5 = conv_block(e5, OUTPUT_CHANNELS, n=1, is_bn=False, is_relu=False)
+
+        # d1 = no need for upsampling
+        d2 = k.layers.UpSampling2D(size=(2, 2), interpolation='bilinear')(d2)
+        d3 = k.layers.UpSampling2D(size=(4, 4), interpolation='bilinear')(d3)
+        d4 = k.layers.UpSampling2D(size=(8, 8), interpolation='bilinear')(d4)
+        e5 = k.layers.UpSampling2D(size=(16, 16), interpolation='bilinear')(e5)
+
+        d2 = k.activations.softmax(d2)
+        d3 = k.activations.softmax(d3)
+        d4 = k.activations.softmax(d4)
+        e5 = k.activations.softmax(e5)
+
+    if training:
+        return tf.keras.Model(inputs=input_layer, outputs=[d1, d2, d3, d4, e5], name='UNet3Plus_DeepSup')
+    else:
+        return tf.keras.Model(inputs=input_layer, outputs=[d1, ], name='UNet3Plus_DeepSup')
 
 
 if __name__ == "__main__":

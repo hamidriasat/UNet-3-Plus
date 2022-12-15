@@ -118,8 +118,8 @@ def unet3plus(input_shape, output_channels):
     return tf.keras.Model(inputs=input_layer, outputs=[output], name='UNet_3Plus')
 
 
-def tiny_unet3plus(input_shape, output_channels):
-    """ Sample model for testing during development """
+def tiny_unet3plus(input_shape, output_channels, training):
+    """ Sample model only for testing during development """
     filters = [64, 128, 256, 512, 1024]
 
     input_layer = k.layers.Input(shape=input_shape, name="input_layer")  # 320*320*3
@@ -132,12 +132,16 @@ def tiny_unet3plus(input_shape, output_channels):
     # last layer does not have batch norm and relu
     d = conv_block(e1, output_channels, n=1, is_bn=False, is_relu=False)
     output = k.activations.softmax(d, )
-    return tf.keras.Model(inputs=input_layer, outputs=[output], name='UNet3Plus')
 
-    # e2 = conv_block(e1, filters[0] // 2)  # 320*320*64
-    # d2 = conv_block(e2, output_channels, n=1, is_bn=False, is_relu=False)
-    # output2 = k.activations.softmax(d2)
-    # return tf.keras.Model(inputs=input_layer, outputs=[output, output2], name='UNet3Plus')
+    if training:
+        e2 = conv_block(e1, filters[0] // 2)  # 320*320*64
+        d2 = conv_block(e2, output_channels, n=1, is_bn=False, is_relu=False)
+        output2 = k.activations.softmax(d2)
+        return tf.keras.Model(inputs=input_layer, outputs=[output, output2], name='UNet3Plus')
+    else:
+        return tf.keras.Model(inputs=input_layer, outputs=[output], name='UNet3Plus')
+
+
 
 
 if __name__ == "__main__":

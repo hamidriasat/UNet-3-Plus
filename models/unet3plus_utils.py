@@ -24,8 +24,8 @@ def conv_block(x, kernels, kernel_size=(3, 3), strides=(1, 1), padding='same',
 
 
 def dot_product(seg, cls):
-    B, H, W, N = k.backend.int_shape(seg)
-    seg = tf.reshape(seg, [-1, H * W, N])
+    b, h, w, n = k.backend.int_shape(seg)
+    seg = tf.reshape(seg, [-1, h * w, n])
     final = tf.einsum("ijk,ik->ijk", seg, cls)
-    final = tf.reshape(final, [-1, H, W, N])
+    final = tf.reshape(final, [-1, h, w, n])
     return final
