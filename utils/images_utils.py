@@ -45,6 +45,12 @@ def prepare_mask(path: str, resize: dict, normalize_mask: dict):
     return mask
 
 
+def image_to_mask_name(image_name: str):
+    # image name--> image_28_0.png
+    # mask name--> mask_28_0.png
+    return image_name.replace('image', 'mask')
+
+
 def postprocess_mask(mask):
     mask = np.argmax(mask, axis=-1)
     return mask.astype(np.int32)

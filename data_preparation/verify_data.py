@@ -10,6 +10,7 @@ from tqdm import tqdm
 
 sys.path.append(os.path.abspath("./"))
 from utils.general_utils import join_paths
+from utils.images_utils import image_to_mask_name
 
 
 def check_image_and_mask(cfg, mode):
@@ -26,9 +27,7 @@ def check_image_and_mask(cfg, mode):
 
     both_found = True
     for image in tqdm(all_images):
-        # image --> image_28_0.png
-        # mask --> mask_28_0.png,
-        mask_name = image.replace('image', 'mask')
+        mask_name = image_to_mask_name(image)
         if not (
                 os.path.exists(
                     join_paths(images_path, image)

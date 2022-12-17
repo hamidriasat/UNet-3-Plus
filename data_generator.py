@@ -4,7 +4,7 @@ import os
 from omegaconf import DictConfig
 
 from utils.general_utils import join_paths
-from utils.images_utils import prepare_image, prepare_mask
+from utils.images_utils import prepare_image, prepare_mask, image_to_mask_name
 
 
 class DataGenerator(tf.keras.utils.Sequence):
@@ -107,12 +107,10 @@ class DataGenerator(tf.keras.utils.Sequence):
                     self.images_paths[index]
                 )
                 if self.mask_available:
-                    # image name--> image_28_0.png
-                    # mask name--> mask_28_0.png,
                     mask_path = join_paths(
                         self.cfg.WORK_DIR,
                         self.cfg.DATASET[self.mode].MASK_PATH,
-                        self.images_paths[index].replace('image', 'mask')
+                        image_to_mask_name(self.images_paths[index])
                     )
             else:
                 img_path = self.images_paths[int(index)]
