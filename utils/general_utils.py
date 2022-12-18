@@ -1,10 +1,13 @@
+"""
+General Utility functions
+"""
 import os
 import tensorflow as tf
 
 
 def create_directory(path):
     """
-    Create Directory of it already does not exist.
+    Create Directory if it already does not exist.
     """
     if not os.path.exists(path):
         os.makedirs(path)

@@ -1,6 +1,6 @@
-# ------------------------------------------------------------------------------
-# Written by Hamid Ali (hamidriasat@gmail.com)
-# ------------------------------------------------------------------------------
+"""
+Utility functions for Unet3+ models
+"""
 import tensorflow as tf
 import tensorflow.keras as k
 

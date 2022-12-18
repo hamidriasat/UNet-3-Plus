@@ -1,16 +1,19 @@
-# ------------------------------------------------------------------------------
-# Written by Hamid Ali (hamidriasat@gmail.com)
-# ------------------------------------------------------------------------------
+"""
+UNet3+ base model
+"""
 import tensorflow as tf
 import tensorflow.keras as k
 from .unet3plus_utils import conv_block
 
 
 def unet3plus(input_shape, output_channels):
-    """ UNet_3Plus """
+    """ UNet3+ base model """
     filters = [64, 128, 256, 512, 1024]
 
-    input_layer = k.layers.Input(shape=input_shape, name="input_layer")  # 320*320*3
+    input_layer = k.layers.Input(
+        shape=input_shape,
+        name="input_layer"
+    )  # 320*320*3
 
     """ Encoder"""
     # block 1
@@ -140,8 +143,6 @@ def tiny_unet3plus(input_shape, output_channels, training):
         return tf.keras.Model(inputs=input_layer, outputs=[output, output2], name='UNet3Plus')
     else:
         return tf.keras.Model(inputs=input_layer, outputs=[output], name='UNet3Plus')
-
-
 
 
 if __name__ == "__main__":

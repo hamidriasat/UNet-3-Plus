@@ -1,10 +1,9 @@
 """
-Check for each image corresponding mask exist or not.
-Verify against both train and val data
+Verify for each image corresponding mask exist or not.
+Check against both train and val data
 """
 import os
 import sys
-
 from omegaconf import DictConfig
 from tqdm import tqdm
 
@@ -14,6 +13,9 @@ from utils.images_utils import image_to_mask_name
 
 
 def check_image_and_mask(cfg, mode):
+    """
+    Check and print names of those images whose mask are not found.
+    """
     images_path = join_paths(
         cfg.WORK_DIR,
         cfg.DATASET[mode].IMAGES_PATH
@@ -45,7 +47,7 @@ def check_image_and_mask(cfg, mode):
 def verify_data(cfg: DictConfig):
     """
     For both train and val data, check for each image its
-     corresponding mask exist or not
+    corresponding mask exist or not. If not then stop the program.
     """
     assert check_image_and_mask(cfg, "TRAIN"), \
         "Train images and mask should be same in length"

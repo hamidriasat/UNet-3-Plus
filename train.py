@@ -1,3 +1,6 @@
+"""
+Training script
+"""
 from datetime import datetime
 import hydra
 from omegaconf import DictConfig
@@ -18,6 +21,9 @@ from losses.unet_loss import unet3p_hybrid_loss
 
 
 def create_training_folders(cfg: DictConfig):
+    """
+    Create directories to store Model CheckPoint and TensorBoard logs.
+    """
     create_directory(
         join_paths(
             cfg.WORK_DIR,
@@ -140,6 +146,9 @@ def train(cfg: DictConfig):
 
 @hydra.main(version_base=None, config_path="configs", config_name="config")
 def main(cfg: DictConfig):
+    """
+    Read config file and pass to train method for training
+    """
     train(cfg)
 
 

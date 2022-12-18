@@ -1,3 +1,6 @@
+"""
+Implementation of different loss functions
+"""
 import tensorflow as tf
 import tensorflow.keras.backend as K
 
@@ -5,9 +8,6 @@ import tensorflow.keras.backend as K
 def iou(y_true, y_pred):
     """
     Calculate intersection over union (IoU) between images
-    :param y_true:
-    :param y_pred:
-    :return:
     """
     y_true_f = K.flatten(y_true)
     y_pred_f = K.flatten(y_pred)
@@ -21,9 +21,6 @@ def iou(y_true, y_pred):
 def iou_loss(y_true, y_pred):
     """
     Jaccard / IoU loss
-    :param y_true:
-    :param y_pred:
-    :return:
     """
     return 1 - iou(y_true, y_pred)
 
@@ -31,9 +28,6 @@ def iou_loss(y_true, y_pred):
 def focal_loss(y_true, y_pred):
     """
     Focal loss
-    :param y_true:
-    :param y_pred:
-    :return:
     """
     gamma = 2.
     alpha = 4.
@@ -54,20 +48,14 @@ def focal_loss(y_true, y_pred):
 
 def ssim_loss(y_true, y_pred):
     """
-    SSIM loss
-    :param y_true:
-    :param y_pred:
-    :return:
+    Structural Similarity Index loss
     """
     return 1 - tf.image.ssim(y_true, y_pred, max_val=1)
 
 
-def dice_coef(y_true, y_pred, smooth=0.0):
+def dice_coef(y_true, y_pred, smooth=1.e-9):
     """
-     Calculate dice coefficient 
-    """""
+    Calculate dice coefficient
+    """
     intersection = K.sum(K.abs(y_true * y_pred), axis=-1)
     return (2. * intersection + smooth) / (K.sum(K.square(y_true), -1) + K.sum(K.square(y_pred), -1) + smooth)
-
-
-

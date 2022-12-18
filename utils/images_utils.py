@@ -1,3 +1,6 @@
+"""
+Utility functions for image processing
+"""
 import numpy as np
 import cv2
 from omegaconf import DictConfig
@@ -5,6 +8,10 @@ import matplotlib.pyplot as plt
 
 
 def read_image(img_path, color_mode):
+    """
+    Read and return image as np array from given path.
+    In case of color image, it returns image in BGR mode.
+    """
     return cv2.imread(img_path, color_mode)
 
 
@@ -16,6 +23,10 @@ def resize_image(img, height, width, resize_method=cv2.INTER_CUBIC):
 
 
 def prepare_image(path: str, resize: DictConfig, normalize_type: str):
+    """
+    Prepare image for model.
+    read image --> resize --> normalize --> return as float32
+    """
     image = read_image(path, cv2.IMREAD_COLOR)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
@@ -32,6 +43,10 @@ def prepare_image(path: str, resize: DictConfig, normalize_type: str):
 
 
 def prepare_mask(path: str, resize: dict, normalize_mask: dict):
+    """
+        Prepare mask for model.
+        read mask --> resize --> normalize --> return as int32
+        """
     mask = read_image(path, cv2.IMREAD_GRAYSCALE)
 
     if resize.VALUE:
@@ -46,17 +61,30 @@ def prepare_mask(path: str, resize: dict, normalize_mask: dict):
 
 
 def image_to_mask_name(image_name: str):
-    # image name--> image_28_0.png
-    # mask name--> mask_28_0.png
+    """
+    Convert image file name to it's corresponding mask file name e.g.
+    image name     -->     mask name
+    image_28_0.png         mask_28_0.png
+    replace image with mask
+    """
+
     return image_name.replace('image', 'mask')
 
 
 def postprocess_mask(mask):
+    """
+    Post process model output.
+    Covert probabilities into indexes based on maximum value.
+    """
     mask = np.argmax(mask, axis=-1)
     return mask.astype(np.int32)
 
 
 def denormalize_mask(mask, classes):
+    """
+    Denormalize mask by multiplying each class with higher
+    integer (255 / classes) for better visualization.
+    """
     mask = mask * (255 / classes)
     return mask.astype(np.int32)
 

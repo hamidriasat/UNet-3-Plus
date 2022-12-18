@@ -1,16 +1,16 @@
-# ------------------------------------------------------------------------------
-# Written by Hamid Ali (hamidriasat@gmail.com)
-# ------------------------------------------------------------------------------
+"""
+UNet_3Plus with Deep Supervision and Classification Guided Module
+"""
 import tensorflow as tf
 import tensorflow.keras as k
 from .unet3plus_utils import conv_block, dot_product
 
 
-def unet3plus_deepsup_cgm(INPUT_SHAPE, OUTPUT_CHANNELS, training=False):
+def unet3plus_deepsup_cgm(input_shape, output_channels, training=False):
     """ UNet_3Plus with Deep Supervision and Classification Guided Module """
     filters = [64, 128, 256, 512, 1024]
 
-    input_layer = k.layers.Input(shape=INPUT_SHAPE, name="input_layer")  # 320*320*3
+    input_layer = k.layers.Input(shape=input_shape, name="input_layer")  # 320*320*3
 
     """ Encoder"""
     # block 1
@@ -119,15 +119,15 @@ def unet3plus_deepsup_cgm(INPUT_SHAPE, OUTPUT_CHANNELS, training=False):
     d1 = conv_block(d1, upsample_channels, n=1)  # 320*320*320 --> 320*320*320
 
     """ Deep Supervision Part"""
-    # last layer does not have batchnorm and relu
-    d1 = conv_block(d1, OUTPUT_CHANNELS, n=1, is_bn=False, is_relu=False)
+    # last layer does not have batch norm and relu
+    d1 = conv_block(d1, output_channels, n=1, is_bn=False, is_relu=False)
     if training:
-        d2 = conv_block(d2, OUTPUT_CHANNELS, n=1, is_bn=False, is_relu=False)
-        d3 = conv_block(d3, OUTPUT_CHANNELS, n=1, is_bn=False, is_relu=False)
-        d4 = conv_block(d4, OUTPUT_CHANNELS, n=1, is_bn=False, is_relu=False)
-        e5 = conv_block(e5, OUTPUT_CHANNELS, n=1, is_bn=False, is_relu=False)
+        d2 = conv_block(d2, output_channels, n=1, is_bn=False, is_relu=False)
+        d3 = conv_block(d3, output_channels, n=1, is_bn=False, is_relu=False)
+        d4 = conv_block(d4, output_channels, n=1, is_bn=False, is_relu=False)
+        e5 = conv_block(e5, output_channels, n=1, is_bn=False, is_relu=False)
 
-        # d1 = no need for upsampling
+        # d1 = no need for up sampling
         d2 = k.layers.UpSampling2D(size=(2, 2), interpolation='bilinear')(d2)
         d3 = k.layers.UpSampling2D(size=(4, 4), interpolation='bilinear')(d3)
         d4 = k.layers.UpSampling2D(size=(8, 8), interpolation='bilinear')(d4)

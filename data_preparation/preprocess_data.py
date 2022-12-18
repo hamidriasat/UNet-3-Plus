@@ -57,10 +57,6 @@ def clip_scan(img, min_value, max_value):
 def resize_scan(scan, new_height, new_width, scan_type):
     """
     Resize CT scan to given size
-    :param scan:
-    :param new_height:
-    :param new_width:
-    :return:
     """
     scan_shape = scan.shape
     resized_scan = np.zeros((new_height, new_width, scan_shape[2]), dtype=scan.dtype)
@@ -89,8 +85,6 @@ def save_images(scan, save_path, img_index):
         before_index = index - 1 if (index - 1) > 0 else 0
         after_index = index + 1 if (index + 1) < scan_shape[-1] else scan_shape[-1] - 1
 
-        # swap before_index with after_index, if you want to load this image in
-        # correct order using OpenCV, since center index is same, so for now leaving it as it is
         new_img_path = join_paths(save_path, f"image_{img_index}_{index}.png")
         new_image = np.stack(
             (
@@ -113,6 +107,9 @@ def save_mask(scan, save_path, mask_index):
 
 
 def extract_images(cfg, images_path, save_path, scan_type="image", ):
+    """
+    Extract images from given scan path
+    """
     for image_path in tqdm(images_path):
         _, index = str(Path(image_path).stem).split("-")
 
@@ -142,7 +139,11 @@ def extract_images(cfg, images_path, save_path, scan_type="image", ):
 
 
 @hydra.main(version_base=None, config_path="../configs", config_name="config")
-def extract_paths(cfg: DictConfig):
+def preprocess_lits_data(cfg: DictConfig):
+    """
+    Preprocess LiTS 2017 (Liver Tumor Segmentation) data by extractions
+    images and mask into UNet3+ data format
+    """
     train_images_names = glob(
         join_paths(
             cfg.WORK_DIR,
@@ -159,7 +160,7 @@ def extract_paths(cfg: DictConfig):
     )
 
     assert len(train_images_names) == len(train_mask_names), \
-        "Train volume and segmentation are not same in length"
+        "Train volumes and segmentations are not same in length"
 
     val_images_names = glob(
         join_paths(
@@ -176,7 +177,7 @@ def extract_paths(cfg: DictConfig):
         )
     )
     assert len(val_images_names) == len(val_mask_names), \
-        "Validation volume and segmentation are not same in length"
+        "Validation volumes and segmentations are not same in length"
 
     train_images_names = sorted(train_images_names)
     train_mask_names = sorted(train_mask_names)
@@ -220,4 +221,4 @@ def extract_paths(cfg: DictConfig):
 
 
 if __name__ == '__main__':
-    extract_paths()
+    preprocess_lits_data()

@@ -65,7 +65,6 @@ CALLBACKS:
 
 
 PREPROCESS_DATA:
-  #  RESIZE_IMAGE: False  # if True, resize to input height and width
   RESIZE:
     VALUE: False  # if True, resize to input height and width
     HEIGHT: ${INPUT.HEIGHT}
