@@ -1,3 +1,6 @@
+"""
+Evaluation script used to calculate accuracy of trained model
+"""
 import hydra
 from omegaconf import DictConfig
 import tensorflow as tf
@@ -10,13 +13,24 @@ from losses.unet_loss import unet3p_hybrid_loss
 
 
 def evaluate(cfg: DictConfig):
+    """
+    Evaluate or calculate accuracy of given model
+    """
+
+    # change number of visible gpus for evaluation
     if cfg.USE_MULTI_GPUS.VALUE:
         set_gpus(cfg.USE_MULTI_GPUS.GPU_IDS)
 
+    # data generator
     val_generator = data_generator.DataGenerator(cfg, mode="VAL")
 
-    optimizer = tf.keras.optimizers.Adam(lr=cfg.HYPER_PARAMETERS.LEARNING_RATE)
+    # load training settings
+    optimizer = tf.keras.optimizers.Adam(
+        lr=cfg.HYPER_PARAMETERS.LEARNING_RATE
+    )
+    # create model
     if cfg.USE_MULTI_GPUS.VALUE:
+        # multi gpu training using tensorflow mirrored strategy
         strategy = tf.distribute.MirroredStrategy(
             cross_device_ops=tf.distribute.HierarchicalCopyAllReduce()
         )
@@ -32,15 +46,18 @@ def evaluate(cfg: DictConfig):
         metrics=[dice_coef],
     )
 
+    # weights model path
     checkpoint_path = join_paths(
         cfg.WORK_DIR,
         cfg.CALLBACKS.MODEL_CHECKPOINT.PATH,
         f"{cfg.MODEL.WEIGHTS_FILE_NAME}.hdf5"
     )
     # TODO: verify without augment it produces same results
+    # load model weights
     model.load_weights(checkpoint_path, by_name=True, skip_mismatch=True)
     model.summary()
 
+    # evaluation metric
     evaluation_metric = "dice_coef"
     if len(model.outputs) > 1:
         evaluation_metric = f"{model.output_names[0]}_dice_coef"
@@ -52,11 +69,15 @@ def evaluate(cfg: DictConfig):
         return_dict=True,
     )
 
+    # return computed loss, validation accuracy and it's metric name
     return result, evaluation_metric
 
 
 @hydra.main(version_base=None, config_path="configs", config_name="config")
 def main(cfg: DictConfig):
+    """
+    Read config file and pass to evaluate method
+    """
     result, evaluation_metric = evaluate(cfg)
     print(result)
     print(f"Validation dice coefficient: {result[evaluation_metric]}")

@@ -39,6 +39,10 @@ def create_training_folders(cfg: DictConfig):
 
 
 def train(cfg: DictConfig):
+    """
+    Training method
+    """
+
     print("Verifying data ...")
     verify_data(cfg)
 
@@ -49,11 +53,14 @@ def train(cfg: DictConfig):
             "please choose other variants from config file"
         )
 
+    # change number of visible gpus for training
     if cfg.USE_MULTI_GPUS.VALUE:
         set_gpus(cfg.USE_MULTI_GPUS.GPU_IDS)
 
+    # create folders to store training checkpoints and logs
     create_training_folders(cfg)
 
+    # data generators
     train_generator = data_generator.DataGenerator(cfg, mode="TRAIN")
     val_generator = data_generator.DataGenerator(cfg, mode="VAL")
 
@@ -62,9 +69,15 @@ def train(cfg: DictConfig):
     #     print(len(batch_images))
     #     if i >= 3: break
 
-    optimizer = tf.keras.optimizers.Adam(lr=cfg.HYPER_PARAMETERS.LEARNING_RATE)
+    # optimizer
+    # TODO update optimizer
+    optimizer = tf.keras.optimizers.Adam(
+        lr=cfg.HYPER_PARAMETERS.LEARNING_RATE
+    )
 
+    # create model
     if cfg.USE_MULTI_GPUS.VALUE:
+        # multi gpu training using tensorflow mirrored strategy
         strategy = tf.distribute.MirroredStrategy(
             cross_device_ops=tf.distribute.HierarchicalCopyAllReduce()
         )
@@ -104,10 +117,12 @@ def train(cfg: DictConfig):
     )
     print("Logs path\n" + csv_log_path)
 
+    # evaluation metric
     evaluation_metric = "val_dice_coef"
     if len(model.outputs) > 1:
         evaluation_metric = f"val_{model.output_names[0]}_dice_coef"
 
+    # TensorBoard, EarlyStopping, ModelCheckpoint and CSVLogger callbacks
     callbacks = [
         TensorBoard(log_dir=tb_log_dir, write_graph=False, profile_batch=0),
         EarlyStopping(
@@ -132,6 +147,7 @@ def train(cfg: DictConfig):
     training_steps = train_generator.__len__()
     validation_steps = val_generator.__len__()
 
+    # start training
     model.fit(
         x=train_generator,
         steps_per_epoch=training_steps,
