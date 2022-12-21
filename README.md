@@ -9,9 +9,14 @@ You can also use it to train UNet3+ on custom dataset.
 
 For dataset preparation read here.
 
+
 > This branch is in development mode.
 
 TODO List
-- NVIDIA DALI
+
+
+- [x] Complete README.md
+- [ ] Add multiprocessing in data preprocessing
+- [ ] Load data through NVIDIA DALI
 
 Licensed under [MIT License](LICENSE)

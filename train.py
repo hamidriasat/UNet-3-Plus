@@ -49,7 +49,7 @@ def train(cfg: DictConfig):
     if cfg.MODEL.TYPE == "unet3plus_deepsup_cgm":
         raise ValueError(
             "UNet3+ with Deep Supervision and Classification Guided Module"
-            "\nModel exist but training script is supported for this variant"
+            "\nModel exist but training script is not supported for this variant"
             "please choose other variants from config file"
         )
 
