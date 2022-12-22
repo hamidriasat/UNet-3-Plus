@@ -1,17 +1,21 @@
+# project root working directory, automatically read by hydra
 WORK_DIR: ${hydra:runtime.cwd}
 
 DATA_PREPARATION:
-  # unprocessed scan data paths
+  # unprocessed LiTS scan data paths
   SCANS_TRAIN_DATA_PATH: "/data/Training Batch 2/"
   SCANS_VAL_DATA_PATH: "/data/Training Batch 1/"
 
+  # Resize scans to model input size
   RESIZED_HEIGHT: ${INPUT.HEIGHT}
   RESIZED_WIDTH: ${INPUT.WIDTH}
 
+  # Clip scans value in given range
   SCAN_MIN_VALUE: -200
   SCAN_MAX_VALUE: 250
 
 DATASET:
+  # paths should be relative from project root path
   TRAIN:
     IMAGES_PATH: "/data/train/images"
     MASK_PATH: "/data/train/mask"
@@ -21,32 +25,34 @@ DATASET:
 
 
 MODEL:
-  # unet3plus, unet3plus_deepsup, unet3plus_deepsup_cgm
+  # available variants are unet3plus, unet3plus_deepsup, unet3plus_deepsup_cgm
   TYPE: "tiny_unet3plus"
   WEIGHTS_FILE_NAME: model_${MODEL.TYPE}
 
-SEED: 5
-VERBOSE: 1
+SEED: 5  # for result's reproducibility
+VERBOSE: 1  # For logs printing details, available options are 0, 1, 2
 DATALOADER_WORKERS: 3  # number of workers used for data loading
 SHOW_CENTER_CHANNEL_IMAGE: True  # only true for UNet3+ otherwise False
 
+# Model input shape
 INPUT:
   HEIGHT: 320
   WIDTH: 320
   CHANNELS: 3
 
-
+# Model output classes
 OUTPUT:
   CLASSES: 2
 
 
 HYPER_PARAMETERS:
   EPOCHS: 5
-  BATCH_SIZE: 2
+  BATCH_SIZE: 2  # specify per gpu batch size
   LEARNING_RATE: 1e-3
 
 
 CALLBACKS:
+  # paths should be relative from project root path
   TENSORBOARD:
     PATH: "/checkpoint/tb_logs"
 
@@ -72,7 +78,7 @@ PREPROCESS_DATA:
   IMAGE_PREPROCESSING_TYPE: "normalize"
 
   NORMALIZE_MASK:
-    VALUE: False
+    VALUE: False  # if True, divide mask by given value
     NORMALIZE_VALUE: 255
 
   SHUFFLE:
@@ -81,8 +87,9 @@ PREPROCESS_DATA:
     VAL:
       VALUE: False
 
+
 USE_MULTI_GPUS:
-  VALUE: False
+  VALUE: False  # If True use multiple gpus for training
   # GPU_IDS: Could be integer or list of integers.
   # In case Integer: if integer value is -1 then use all available gpus.
   # otherwise if positive number, then use given number of gpus.

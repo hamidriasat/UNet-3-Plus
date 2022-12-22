@@ -55,6 +55,7 @@ def train(cfg: DictConfig):
 
     # change number of visible gpus for training
     if cfg.USE_MULTI_GPUS.VALUE:
+        # TODO after setting gpus, update batch size here
         set_gpus(cfg.USE_MULTI_GPUS.GPU_IDS)
 
     # create folders to store training checkpoints and logs
