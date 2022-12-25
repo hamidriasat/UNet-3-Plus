@@ -1,6 +1,8 @@
 """
 Evaluation script used to calculate accuracy of trained model
 """
+import os.path
+
 import hydra
 from omegaconf import DictConfig
 import tensorflow as tf
@@ -52,6 +54,10 @@ def evaluate(cfg: DictConfig):
         cfg.CALLBACKS.MODEL_CHECKPOINT.PATH,
         f"{cfg.MODEL.WEIGHTS_FILE_NAME}.hdf5"
     )
+
+    assert os.path.exists(checkpoint_path), \
+        f"Model weight's file does not exist at \n{checkpoint_path}"
+
     # TODO: verify without augment it produces same results
     # load model weights
     model.load_weights(checkpoint_path, by_name=True, skip_mismatch=True)

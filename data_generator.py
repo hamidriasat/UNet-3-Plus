@@ -15,7 +15,7 @@ class DataGenerator(tf.keras.utils.Sequence):
     Generate batches of data for model by reading images and their
     corresponding masks.
     There are two options you can either pass directory path or list.
-    In case of directory, it should contain relative path to images/mask
+    In case of directory, it should contain relative path of images/mask
     folder from project root path.
     In case of list of images, every element should contain absolute path
     for each image and mask.
@@ -49,7 +49,8 @@ class DataGenerator(tf.keras.utils.Sequence):
 
         self.mask_available = True
         # check mask are available or not
-        if self.cfg.DATASET.VAL.MASK_PATH is None:
+        if self.cfg.DATASET.VAL.MASK_PATH is None or \
+                str(self.cfg.DATASET.VAL.MASK_PATH).lower() == "none":
             self.mask_available = False
 
         # self.images_paths.sort()  # no need for sorting

@@ -4,20 +4,20 @@
 
 [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/unet-3-a-full-scale-connected-unet-for/medical-image-segmentation-on-lits2017)](https://paperswithcode.com/sota/medical-image-segmentation-on-lits2017?p=unet-3-a-full-scale-connected-unet-for)
 
+` Hit star ⭐ if you find my work useful. `
+
 ## Table of Contents
 
-- UNet 3+
+- [UNet 3+](https://arxiv.org/abs/2004.08790) for Image Segmentation in Tensorflow Keras.
     - [Table of Contents](#table-of-contents)
     - [Installation](#installation)
     - [Code Structure](#code-structure)
     - [Config](#config)
     - [Data Preparation](#data-preparation)
     - [Models](#models)
-    - [Getting Started](#getting-started)
-        - [Inference Demo with Pre-trained Models](#inference-demo-with-pre-trained-models)
-        - [Training & Evaluation in Command Line](#training--evaluation-in-command-line)
-        - [Multiple Runs](#multiple-runs)
-
+    - [Training & Evaluation](#training--evaluation)
+    - [Inference Demo](#inference-demo)
+    
 ## Installation
 
 **Requirements**
@@ -29,9 +29,16 @@
 This code base is tested against above-mentioned Python and TensorFlow versions. But it's expected to work for latest
 versions too.
 
+* Clone code
+
+```
+git clone https://github.com/hamidriasat/UNet-3-Plus.git UNet3P
+cd UNet3P
+```
+
 * Install other requirements.
 
-```angular2html
+```
 pip install -r requirements.txt
 ```
 
@@ -42,7 +49,7 @@ pip install -r requirements.txt
 - **data**: Dataset files (see [Data Preparation](#data-preparation)) for more details
 - **data_preparation**: For LiTS data preparation and data verification
 - **losses**: Implementations of UNet3+ hybrid loss function and dice coefficient
-- **models**:- Unet3+ model files
+- **models**: Unet3+ model files
 - **utils**: Generic utility functions
 - **data_generator.py**: Data generator for training, validation and testing
 - **evaluate.py**: Evaluation script to validate accuracy on trained model
@@ -58,7 +65,7 @@ complex applications.
 
 Most of the configurations attributes in our [config](configs/config.yaml) are self-explanatory. However, for some
 attributes additions comments are added.
-You can override configurations from command line too but it's advisable to overrride  
+You can override configurations from command line too, but it's advisable to override them from config file.
 
 ## Data Preparation
 
@@ -70,22 +77,118 @@ For dataset preparation read [here](/data_preparation/README.md).
 
 ## Models
 
-This repo contain all three versions of UNet3+
+This repo contains all three versions of UNet3+.
 
-- [UNet3+ Base model](/models/unet3plus.py)
-- [UNet3+ with Deep Supervision](/models/unet3plus_deep_supervision.py)
-- [UNet3+ with Deep Supervision and Classification Guided Module](/models/unet3plus_deep_supervision_cgm.py)
+[//]: # (https://stackoverflow.com/questions/47344571/how-to-draw-checkbox-or-tick-mark-in-github-markdown-table)
+
+| #   |                          Description                          |                             Model Name                             | Training Supported |
+|:----|:-------------------------------------------------------------:|:------------------------------------------------------------------:|:------------------:|
+| 0   |                       UNet3+ Base model                       |                 [unet3plus](/models/unet3plus.py)                  |      &check;       |
+| 1   |                 UNet3+ with Deep Supervision                  |     [unet3plus_deepsup](/models/unet3plus_deep_supervision.py)     |      &check;       |
+| 2   | UNet3+ with Deep Supervision and Classification Guided Module | [unet3plus_deepsup_cgm](/models/unet3plus_deep_supervision_cgm.py) |      &cross;       |
 
 [Here](/losses/unet_loss.py) you can find UNet3+ hybrid loss.
 
+### Training & Evaluation
+
+To train a model call `train.py` with required model type.
+
+e.g. To train on base model run
+
+```
+python train.py ++MODEL.TYPE=unet3plus
+```
+
+To evaluate the trained models call `evaluate.py`.
+
+e.g. To calculate accuracy of trained UNet3+ Base model on validation data run
+
+```
+python evaluate.py ++MODEL.TYPE=unet3plus
+```
+
+**Multi Gpu Training**
+
+Our code support multi gpu training
+using [Tensorflow Distributed MirroredStrategy](https://www.tensorflow.org/api_docs/python/tf/distribute/MirroredStrategy)
+.
+By default, training and evaluation is done on only one gpu. To enable multiple gpus you have to explicitly set
+`USE_MULTI_GPUS` values.
+e.g. To train on all available gpus run
+
+```
+python train.py ... ++USE_MULTI_GPUS.VALUE=True ++USE_MULTI_GPUS.GPU_IDS=-1 
+```
+
+For `GPU_IDS` two options are available. It could be either integer or list of integers.
+
+- In case Integer:
+    - If integer value is -1 then it uses all available gpus.
+    - Otherwise, if positive number, then use given number of gpus.
+- In case list of Integers: each integer will be considered as gpu id
+  e.g. [4,5,7] means use gpu 5,6 and 8 for training/evaluation
+
+### Inference Demo
+
+For visualization two options are available
+
+1. [Visualize from directory](#visualize-from-directory)
+2. [Visualize from list](#visualize-from-list)
+
+In both cases mask is optional
+
+You can visualize results through [predict.ipynb](/predict.ipynb) notebook, or you can also override these settings
+through command line and call `predict.py`
+
+1. ***Visualize from directory***
+
+In case of visualization from directory, it's going to make prediction and show all images from given directory.
+Override the validation data paths and make sure the directory paths are relative to the project base/root path e.g.
+
+```
+python predict.py ++MODEL.TYPE=unet3plus ^
+++DATASET.VAL.IMAGES_PATH=/data/val/images/ ^
+++DATASET.VAL.MASK_PATH=/data/val/mask/
+```
+
+2: ***Visualize from list***
+
+In case of visualization from list, each list element should contain absolute path of image/mask.
+
+e.g. To visualize model results on two images along with their corresponding mask, run
+
+```
+python predict.py ++MODEL.TYPE=unet3plus ^
+++DATASET.VAL.IMAGES_PATH=[^
+H:\\Projects\\UNet3P\\data\\val\images\\image_0_48.png,^
+H:\\Projects\\UNet3P\\data\\val\images\\image_0_21.png^
+] ++DATASET.VAL.MASK_PATH=[^
+H:\\Projects\\UNet3P\\data\\val\\mask\\mask_0_48.png,^
+H:\\Projects\\UNet3P\\data\\val\\mask\\mask_0_21.png^
+]
+```
+These commands are tested on Windows. For Linux replace `^` with \ and replace `H:\\Projects` with your own base path
+
+> Note: Don't add space between list elements, it will create problem with Hydra.
+
+
+
+In both cases if mask is not available just set the mask path to None
+
+```
+python predict.py ++DATASET.VAL.IMAGES_PATH=... ++DATASET.VAL.MASK_PATH=None
+```
 
 > This branch is in development mode. So changes are expected.
 
 TODO List
 
 - [x] Complete README.md
-- [ ] Add requirements file
+- [x] Add requirements file
 - [ ] Add multiprocessing in LiTS data preprocessing
 - [ ] Load data through NVIDIA DALI
+
+We appreciate any feedback so reporting problems, and asking questions are welcomed here.
+
 
 Licensed under [MIT License](LICENSE)
