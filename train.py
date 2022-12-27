@@ -14,7 +14,7 @@ from tensorflow.keras.callbacks import (
 
 import data_generator
 from data_preparation.verify_data import verify_data
-from utils.general_utils import create_directory, join_paths, set_gpus
+from utils.general_utils import create_directory, join_paths, set_gpus, get_gpus_count
 from models.model import prepare_model
 from losses.loss import dice_coef
 from losses.unet_loss import unet3p_hybrid_loss
@@ -53,10 +53,12 @@ def train(cfg: DictConfig):
             "please choose other variants from config file"
         )
 
-    # change number of visible gpus for training
     if cfg.USE_MULTI_GPUS.VALUE:
-        # TODO after setting gpus, update batch size here
+        # change number of visible gpus for training
         set_gpus(cfg.USE_MULTI_GPUS.GPU_IDS)
+        # change batch size according to available gpus
+        cfg.HYPER_PARAMETERS.BATCH_SIZE = \
+            cfg.HYPER_PARAMETERS.BATCH_SIZE * get_gpus_count
 
     # create folders to store training checkpoints and logs
     create_training_folders(cfg)
@@ -73,7 +75,7 @@ def train(cfg: DictConfig):
     # optimizer
     # TODO update optimizer
     optimizer = tf.keras.optimizers.Adam(
-        lr=cfg.HYPER_PARAMETERS.LEARNING_RATE
+        learning_rate=cfg.HYPER_PARAMETERS.LEARNING_RATE
     )
 
     # create model

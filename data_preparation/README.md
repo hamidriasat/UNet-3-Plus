@@ -71,3 +71,5 @@ is responsible for converting image name to it's corresponding file name.
 
 Each image should be a color image with 3 channels and `RGB` color format. Each mask is considered as a gray scale
 image, where each pixel value is the class on which each pixel belongs.
+
+Congratulations, now you can start training and testing on your new dataset!

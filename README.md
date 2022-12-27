@@ -17,7 +17,7 @@
     - [Models](#models)
     - [Training & Evaluation](#training--evaluation)
     - [Inference Demo](#inference-demo)
-    
+
 ## Installation
 
 **Requirements**
@@ -83,15 +83,15 @@ This repo contains all three versions of UNet3+.
 
 | #   |                          Description                          |                             Model Name                             | Training Supported |
 |:----|:-------------------------------------------------------------:|:------------------------------------------------------------------:|:------------------:|
-| 0   |                       UNet3+ Base model                       |                 [unet3plus](/models/unet3plus.py)                  |      &check;       |
-| 1   |                 UNet3+ with Deep Supervision                  |     [unet3plus_deepsup](/models/unet3plus_deep_supervision.py)     |      &check;       |
-| 2   | UNet3+ with Deep Supervision and Classification Guided Module | [unet3plus_deepsup_cgm](/models/unet3plus_deep_supervision_cgm.py) |      &cross;       |
+| 1   |                       UNet3+ Base model                       |                 [unet3plus](/models/unet3plus.py)                  |      &check;       |
+| 2   |                 UNet3+ with Deep Supervision                  |     [unet3plus_deepsup](/models/unet3plus_deep_supervision.py)     |      &check;       |
+| 3   | UNet3+ with Deep Supervision and Classification Guided Module | [unet3plus_deepsup_cgm](/models/unet3plus_deep_supervision_cgm.py) |      &cross;       |
 
 [Here](/losses/unet_loss.py) you can find UNet3+ hybrid loss.
 
 ### Training & Evaluation
 
-To train a model call `train.py` with required model type.
+To train a model call `train.py` with required model type and configurations .
 
 e.g. To train on base model run
 
@@ -151,9 +151,11 @@ python predict.py ++MODEL.TYPE=unet3plus ^
 ++DATASET.VAL.MASK_PATH=/data/val/mask/
 ```
 
-2: ***Visualize from list***
+2. ***Visualize from list***
 
-In case of visualization from list, each list element should contain absolute path of image/mask.
+In case of visualization from list, each list element should contain absolute path of image/mask. For absolute paths
+training data naming convention does not matter you can pass whatever naming convention you have, just make sure images,
+and it's corresponding mask are on same index.
 
 e.g. To visualize model results on two images along with their corresponding mask, run
 
@@ -167,6 +169,7 @@ H:\\Projects\\UNet3P\\data\\val\\mask\\mask_0_48.png,^
 H:\\Projects\\UNet3P\\data\\val\\mask\\mask_0_21.png^
 ]
 ```
+
 These commands are tested on Windows. For Linux replace `^` with \ and replace `H:\\Projects` with your own base path
 
 > Note: Don't add space between list elements, it will create problem with Hydra.
@@ -185,10 +188,10 @@ TODO List
 
 - [x] Complete README.md
 - [x] Add requirements file
+- [ ] Add Data augmentation
 - [ ] Add multiprocessing in LiTS data preprocessing
 - [ ] Load data through NVIDIA DALI
 
 We appreciate any feedback so reporting problems, and asking questions are welcomed here.
-
 
 Licensed under [MIT License](LICENSE)

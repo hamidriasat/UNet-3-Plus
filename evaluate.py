@@ -8,7 +8,7 @@ from omegaconf import DictConfig
 import tensorflow as tf
 
 import data_generator
-from utils.general_utils import join_paths, set_gpus
+from utils.general_utils import join_paths, set_gpus, get_gpus_count
 from models.model import prepare_model
 from losses.loss import dice_coef
 from losses.unet_loss import unet3p_hybrid_loss
@@ -19,16 +19,19 @@ def evaluate(cfg: DictConfig):
     Evaluate or calculate accuracy of given model
     """
 
-    # change number of visible gpus for evaluation
     if cfg.USE_MULTI_GPUS.VALUE:
+        # change number of visible gpus for evaluation
         set_gpus(cfg.USE_MULTI_GPUS.GPU_IDS)
+        # change batch size according to available gpus
+        cfg.HYPER_PARAMETERS.BATCH_SIZE = \
+            cfg.HYPER_PARAMETERS.BATCH_SIZE * get_gpus_count
 
     # data generator
     val_generator = data_generator.DataGenerator(cfg, mode="VAL")
 
     # load training settings
     optimizer = tf.keras.optimizers.Adam(
-        lr=cfg.HYPER_PARAMETERS.LEARNING_RATE
+        learning_rate=cfg.HYPER_PARAMETERS.LEARNING_RATE
     )
     # create model
     if cfg.USE_MULTI_GPUS.VALUE:

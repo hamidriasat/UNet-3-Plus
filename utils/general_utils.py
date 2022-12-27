@@ -44,3 +44,10 @@ def set_gpus(gpu_ids):
     except RuntimeError as e:
         # Visible devices must be set at program startup
         print(e)
+
+
+def get_gpus_count():
+    """
+    Return length of available gpus.
+    """
+    return len(tf.config.experimental.list_logical_devices('GPU'))
