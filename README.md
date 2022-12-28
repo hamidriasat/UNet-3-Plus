@@ -60,12 +60,7 @@ pip install -r requirements.txt
 
 ## Config
 
-We are using [Hydra](https://hydra.cc/) for passing configurations. Hydra is a framework for elegantly configuring
-complex applications.
-
-Most of the configurations attributes in our [config](configs/config.yaml) are self-explanatory. However, for some
-attributes additions comments are added.
-You can override configurations from command line too, but it's advisable to override them from config file.
+Configurations are passed through `yaml` file. For more details on config file read [here](/configs/).
 
 ## Data Preparation
 
