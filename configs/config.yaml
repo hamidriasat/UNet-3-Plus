@@ -1,8 +1,8 @@
-# project root working directory, automatically read by hydra
+# project root working directory, automatically read by hydra (.../UNet3P)
 WORK_DIR: ${hydra:runtime.cwd}
 
 DATA_PREPARATION:
-  # unprocessed LiTS scan data paths
+  # unprocessed LiTS scan data paths, for custom data training skip this section details
   SCANS_TRAIN_DATA_PATH: "/data/Training Batch 2/"
   SCANS_VAL_DATA_PATH: "/data/Training Batch 1/"
 
@@ -32,7 +32,7 @@ MODEL:
 SEED: 5  # for result's reproducibility
 VERBOSE: 1  # For logs printing details, available options are 0, 1, 2
 DATALOADER_WORKERS: 3  # number of workers used for data loading
-SHOW_CENTER_CHANNEL_IMAGE: True  # only true for UNet3+ otherwise False
+SHOW_CENTER_CHANNEL_IMAGE: True  # only true for UNet3+ for custom dataset it should be False
 
 # Model input shape
 INPUT:

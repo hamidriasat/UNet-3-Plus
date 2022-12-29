@@ -1,17 +1,20 @@
-
-Here we provide **overview** of our config file and how you can use your own custom settings's for training and evaluation.
-
+Here we provide **overview** of our config file and how you can use your own custom settings's for training and
+evaluation.
 
 We are using [Hydra](https://hydra.cc/) for passing configurations. Hydra is a framework for elegantly configuring
-complex applications. In hydra you can easily [extend](https://hydra.cc/docs/patterns/extending_configs/) and [interpolate](https://hydra.cc/docs/advanced/override_grammar/basic/#primitives) `yaml` config files.
-[Here](https://hydra.cc/docs/1.0/advanced/override_grammar/basic/)  you can read how to pass or override configurations through command line.
+complex applications. In Hydra you can easily [extend](https://hydra.cc/docs/patterns/extending_configs/)
+and [interpolate](https://hydra.cc/docs/advanced/override_grammar/basic/#primitives) `yaml` config files.
+[Here](https://hydra.cc/docs/1.0/advanced/override_grammar/basic/)  you can read how to pass or override configurations
+through command line.
 
 Most of the configurations attributes in our [config](/configs/config.yaml) are self-explanatory. However, for some
 attributes additions comments are added.
-You can override configurations from command line too, but it's advisable to override them from config file because it's easy.
+You can override configurations from command line too, but it's advisable to override them from config file because it's
+easy.
 
-By default hydra stores a log file of each run in a seperate directory. We have disabled it in our case, 
-if you want to enabled them to keep record of each run configration's then comment out the settings at the end config file.
+By default, hydra stores a log file of each run in a separate directory. We have disabled it in our case,
+if you want to enable them to keep record of each run configuration's then comment out the settings at the end of config
+file.
 
 ```yaml
 # project root working directory, automatically read by hydra (.../UNet3P)
@@ -54,5 +57,5 @@ USE_MULTI_GPUS:
 # to stop hydra from storing logs files
 defaults:
   ...
-  
+
 ```

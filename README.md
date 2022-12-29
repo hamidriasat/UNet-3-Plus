@@ -91,7 +91,7 @@ To train a model call `train.py` with required model type and configurations .
 e.g. To train on base model run
 
 ```
-python train.py ++MODEL.TYPE=unet3plus
+python train.py MODEL.TYPE=unet3plus
 ```
 
 To evaluate the trained models call `evaluate.py`.
@@ -99,7 +99,7 @@ To evaluate the trained models call `evaluate.py`.
 e.g. To calculate accuracy of trained UNet3+ Base model on validation data run
 
 ```
-python evaluate.py ++MODEL.TYPE=unet3plus
+python evaluate.py MODEL.TYPE=unet3plus
 ```
 
 **Multi Gpu Training**
@@ -112,7 +112,7 @@ By default, training and evaluation is done on only one gpu. To enable multiple 
 e.g. To train on all available gpus run
 
 ```
-python train.py ... ++USE_MULTI_GPUS.VALUE=True ++USE_MULTI_GPUS.GPU_IDS=-1 
+python train.py ... USE_MULTI_GPUS.VALUE=True USE_MULTI_GPUS.GPU_IDS=-1 
 ```
 
 For `GPU_IDS` two options are available. It could be either integer or list of integers.
@@ -141,9 +141,9 @@ In case of visualization from directory, it's going to make prediction and show 
 Override the validation data paths and make sure the directory paths are relative to the project base/root path e.g.
 
 ```
-python predict.py ++MODEL.TYPE=unet3plus ^
-++DATASET.VAL.IMAGES_PATH=/data/val/images/ ^
-++DATASET.VAL.MASK_PATH=/data/val/mask/
+python predict.py MODEL.TYPE=unet3plus ^
+DATASET.VAL.IMAGES_PATH=/data/val/images/ ^
+DATASET.VAL.MASK_PATH=/data/val/mask/
 ```
 
 2. ***Visualize from list***
@@ -155,15 +155,17 @@ and it's corresponding mask are on same index.
 e.g. To visualize model results on two images along with their corresponding mask, run
 
 ```
-python predict.py ++MODEL.TYPE=unet3plus ^
-++DATASET.VAL.IMAGES_PATH=[^
+python predict.py MODEL.TYPE=unet3plus ^
+DATASET.VAL.IMAGES_PATH=[^
 H:\\Projects\\UNet3P\\data\\val\images\\image_0_48.png,^
 H:\\Projects\\UNet3P\\data\\val\images\\image_0_21.png^
-] ++DATASET.VAL.MASK_PATH=[^
+] DATASET.VAL.MASK_PATH=[^
 H:\\Projects\\UNet3P\\data\\val\\mask\\mask_0_48.png,^
 H:\\Projects\\UNet3P\\data\\val\\mask\\mask_0_21.png^
 ]
 ```
+
+For your own data visualization set `SHOW_CENTER_CHANNEL_IMAGE=False`. This should set True for only UNet3+ LiTS data.
 
 These commands are tested on Windows. For Linux replace `^` with \ and replace `H:\\Projects` with your own base path
 
@@ -174,7 +176,7 @@ These commands are tested on Windows. For Linux replace `^` with \ and replace `
 In both cases if mask is not available just set the mask path to None
 
 ```
-python predict.py ++DATASET.VAL.IMAGES_PATH=... ++DATASET.VAL.MASK_PATH=None
+python predict.py DATASET.VAL.IMAGES_PATH=... DATASET.VAL.MASK_PATH=None
 ```
 
 > This branch is in development mode. So changes are expected.
