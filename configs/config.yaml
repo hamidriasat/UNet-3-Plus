@@ -29,6 +29,7 @@ MODEL:
   TYPE: "tiny_unet3plus"
   WEIGHTS_FILE_NAME: model_${MODEL.TYPE}
 
+DATA_GENERATOR_TYPE: "TF_GENERATOR"  # options are TF_GENERATOR or DALI_GENERATOR
 SEED: 5  # for result's reproducibility
 VERBOSE: 1  # For logs printing details, available options are 0, 1, 2
 DATALOADER_WORKERS: 3  # number of workers used for data loading

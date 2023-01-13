@@ -12,9 +12,9 @@ from tensorflow.keras.callbacks import (
     CSVLogger
 )
 
-import data_generator
+from data_generators import data_generator
 from data_preparation.verify_data import verify_data
-from utils.general_utils import create_directory, join_paths, set_gpus, get_gpus_count
+from utils.general_utils import create_directory, join_paths, set_gpus
 from models.model import prepare_model
 from losses.loss import dice_coef
 from losses.unet_loss import unet3p_hybrid_loss
@@ -56,21 +56,11 @@ def train(cfg: DictConfig):
     if cfg.USE_MULTI_GPUS.VALUE:
         # change number of visible gpus for training
         set_gpus(cfg.USE_MULTI_GPUS.GPU_IDS)
-        # change batch size according to available gpus
-        cfg.HYPER_PARAMETERS.BATCH_SIZE = \
-            cfg.HYPER_PARAMETERS.BATCH_SIZE * get_gpus_count()
+        # update batch size according to available gpus
+        data_generator.update_batch_size(cfg)
 
     # create folders to store training checkpoints and logs
     create_training_folders(cfg)
-
-    # data generators
-    train_generator = data_generator.DataGenerator(cfg, mode="TRAIN")
-    val_generator = data_generator.DataGenerator(cfg, mode="VAL")
-
-    # verify generator
-    # for i, (batch_images, batch_mask) in enumerate(val_generator):
-    #     print(len(batch_images))
-    #     if i >= 3: break
 
     # optimizer
     # TODO update optimizer
@@ -79,6 +69,7 @@ def train(cfg: DictConfig):
     )
 
     # create model
+    strategy = None
     if cfg.USE_MULTI_GPUS.VALUE:
         # multi gpu training using tensorflow mirrored strategy
         strategy = tf.distribute.MirroredStrategy(
@@ -96,6 +87,15 @@ def train(cfg: DictConfig):
         metrics=[dice_coef],
     )
     model.summary()
+
+    # data generators
+    train_generator = data_generator.get_data_generator(cfg, "TRAIN", strategy)
+    val_generator = data_generator.get_data_generator(cfg, "VAL", strategy)
+
+    # verify generator
+    # for i, (batch_images, batch_mask) in enumerate(val_generator):
+    #     print(len(batch_images))
+    #     if i >= 3: break
 
     # the tensorboard log directory will be a unique subdirectory
     # based on the start time for the run
@@ -147,8 +147,8 @@ def train(cfg: DictConfig):
         )
     ]
 
-    training_steps = train_generator.__len__()
-    validation_steps = val_generator.__len__()
+    training_steps = data_generator.get_iterations(cfg, mode="TRAIN")
+    validation_steps = data_generator.get_iterations(cfg, mode="VAL")
 
     # start training
     model.fit(
@@ -157,7 +157,6 @@ def train(cfg: DictConfig):
         validation_data=val_generator,
         validation_steps=validation_steps,
         epochs=cfg.HYPER_PARAMETERS.EPOCHS,
-        batch_size=cfg.HYPER_PARAMETERS.BATCH_SIZE,
         callbacks=callbacks,
         workers=cfg.DATALOADER_WORKERS,
     )

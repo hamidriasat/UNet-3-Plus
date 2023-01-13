@@ -7,7 +7,7 @@ import hydra
 from omegaconf import DictConfig
 import tensorflow as tf
 
-import data_generator
+from data_generators import data_generator
 from utils.general_utils import join_paths, set_gpus, get_gpus_count
 from models.model import prepare_model
 from losses.loss import dice_coef
@@ -22,18 +22,15 @@ def evaluate(cfg: DictConfig):
     if cfg.USE_MULTI_GPUS.VALUE:
         # change number of visible gpus for evaluation
         set_gpus(cfg.USE_MULTI_GPUS.GPU_IDS)
-        # change batch size according to available gpus
-        cfg.HYPER_PARAMETERS.BATCH_SIZE = \
-            cfg.HYPER_PARAMETERS.BATCH_SIZE * get_gpus_count
-
-    # data generator
-    val_generator = data_generator.DataGenerator(cfg, mode="VAL")
+        # update batch size according to available gpus
+        data_generator.update_batch_size(cfg)
 
     # load training settings
     optimizer = tf.keras.optimizers.Adam(
         learning_rate=cfg.HYPER_PARAMETERS.LEARNING_RATE
     )
     # create model
+    strategy = None
     if cfg.USE_MULTI_GPUS.VALUE:
         # multi gpu training using tensorflow mirrored strategy
         strategy = tf.distribute.MirroredStrategy(
@@ -66,6 +63,10 @@ def evaluate(cfg: DictConfig):
     model.load_weights(checkpoint_path, by_name=True, skip_mismatch=True)
     model.summary()
 
+    # data generators
+    val_generator = data_generator.get_data_generator(cfg, "VAL", strategy)
+    validation_steps = data_generator.get_iterations(cfg, mode="VAL")
+
     # evaluation metric
     evaluation_metric = "dice_coef"
     if len(model.outputs) > 1:
@@ -73,7 +74,7 @@ def evaluate(cfg: DictConfig):
 
     result = model.evaluate(
         x=val_generator,
-        batch_size=cfg.HYPER_PARAMETERS.BATCH_SIZE,
+        steps=validation_steps,
         workers=cfg.DATALOADER_WORKERS,
         return_dict=True,
     )

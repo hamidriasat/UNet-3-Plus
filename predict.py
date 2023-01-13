@@ -5,7 +5,7 @@ import os
 import hydra
 from omegaconf import DictConfig
 
-import data_generator
+from data_generators import tf_data_generator
 from utils.general_utils import join_paths
 from utils.images_utils import display
 from utils.images_utils import postprocess_mask, denormalize_mask
@@ -21,7 +21,7 @@ def predict(cfg: DictConfig):
     cfg.HYPER_PARAMETERS.BATCH_SIZE = 1
 
     # data generator
-    val_generator = data_generator.DataGenerator(cfg, mode="VAL")
+    val_generator = tf_data_generator.DataGenerator(cfg, mode="VAL")
 
     # create model
     model = prepare_model(cfg)

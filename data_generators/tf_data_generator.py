@@ -1,19 +1,19 @@
 """
-Data generator class.
+Tensorflow data generator class.
 """
 import tensorflow as tf
 import numpy as np
 import os
 from omegaconf import DictConfig
 
-from utils.general_utils import join_paths, get_data_paths
-from utils.images_utils import prepare_image, prepare_mask, image_to_mask_name
+from utils.general_utils import get_data_paths
+from utils.images_utils import prepare_image, prepare_mask
 
 
 class DataGenerator(tf.keras.utils.Sequence):
     """
     Generate batches of data for model by reading images and their
-    corresponding masks.
+    corresponding masks using TensorFlow Sequence Generator.
     There are two options you can either pass directory path or list.
     In case of directory, it should contain relative path of images/mask
     folder from project root path.
@@ -54,9 +54,11 @@ class DataGenerator(tf.keras.utils.Sequence):
         # Tensorflow problem: on_epoch_end is not being called at the end
         # of each epoch, so forcing on_epoch_end call
         self.on_epoch_end()
-        return int(np.floor(
-            len(self.images_paths) / self.batch_size
-        ))
+        return int(
+            np.floor(
+                len(self.images_paths) / self.batch_size
+            )
+        )
 
     def on_epoch_end(self):
         """
@@ -84,20 +86,24 @@ class DataGenerator(tf.keras.utils.Sequence):
         """
 
         # create empty array to store batch data
-        batch_images = np.zeros((
-            self.cfg.HYPER_PARAMETERS.BATCH_SIZE,
-            self.cfg.INPUT.HEIGHT,
-            self.cfg.INPUT.WIDTH,
-            self.cfg.INPUT.CHANNELS
-        )).astype(np.float32)
-
-        if self.mask_available:
-            batch_masks = np.zeros((
+        batch_images = np.zeros(
+            (
                 self.cfg.HYPER_PARAMETERS.BATCH_SIZE,
                 self.cfg.INPUT.HEIGHT,
                 self.cfg.INPUT.WIDTH,
-                self.cfg.OUTPUT.CLASSES
-            )).astype(np.float32)
+                self.cfg.INPUT.CHANNELS
+            )
+        ).astype(np.float32)
+
+        if self.mask_available:
+            batch_masks = np.zeros(
+                (
+                    self.cfg.HYPER_PARAMETERS.BATCH_SIZE,
+                    self.cfg.INPUT.HEIGHT,
+                    self.cfg.INPUT.WIDTH,
+                    self.cfg.OUTPUT.CLASSES
+                )
+            ).astype(np.float32)
 
         for i, index in enumerate(indexes):
             # extract path from list
@@ -135,11 +141,13 @@ class DataGenerator(tf.keras.utils.Sequence):
                 )
 
             # set shape attributes which was lost during Tf conversion
-            image.set_shape([
-                self.cfg.INPUT.HEIGHT,
-                self.cfg.INPUT.WIDTH,
-                self.cfg.INPUT.CHANNELS
-            ])
+            image.set_shape(
+                [
+                    self.cfg.INPUT.HEIGHT,
+                    self.cfg.INPUT.WIDTH,
+                    self.cfg.INPUT.CHANNELS
+                ]
+            )
             batch_images[i] = image
 
             if self.mask_available:
@@ -150,11 +158,13 @@ class DataGenerator(tf.keras.utils.Sequence):
                     self.cfg.OUTPUT.CLASSES,
                     dtype=tf.int32
                 )
-                mask.set_shape([
-                    self.cfg.INPUT.HEIGHT,
-                    self.cfg.INPUT.WIDTH,
-                    self.cfg.OUTPUT.CLASSES
-                ])
+                mask.set_shape(
+                    [
+                        self.cfg.INPUT.HEIGHT,
+                        self.cfg.INPUT.WIDTH,
+                        self.cfg.OUTPUT.CLASSES
+                    ]
+                )
                 batch_masks[i] = mask
 
         if self.mask_available:
