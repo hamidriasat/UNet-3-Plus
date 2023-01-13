@@ -3,6 +3,8 @@ General Utility functions
 """
 import os
 import tensorflow as tf
+from omegaconf import DictConfig
+from .images_utils import image_to_mask_name
 
 
 def create_directory(path):
@@ -51,3 +53,58 @@ def get_gpus_count():
     Return length of available gpus.
     """
     return len(tf.config.experimental.list_logical_devices('GPU'))
+
+
+def get_data_paths(cfg: DictConfig, mode: str, mask_available: bool):
+    """
+    Return list of absolute images/mask paths.
+    There are two options you can either pass directory path or list.
+    In case of directory, it should contain relative path of images/mask
+    folder from project root path.
+    In case of list of images, every element should contain absolute path
+    for each image and mask.
+    For prediction, you can set mask path to None if mask are not
+    available for visualization.
+    """
+
+    # read images from directory
+    if isinstance(cfg.DATASET[mode].IMAGES_PATH, str):
+        # has only images name not full path
+        images_paths = os.listdir(
+            join_paths(
+                cfg.WORK_DIR,
+                cfg.DATASET[mode].IMAGES_PATH
+            )
+        )
+
+        if mask_available:
+            mask_paths = [
+                image_to_mask_name(image_name) for image_name in images_paths
+            ]
+            # create full mask paths from folder
+            mask_paths = [
+                join_paths(
+                    cfg.WORK_DIR,
+                    cfg.DATASET[mode].MASK_PATH,
+                    mask_name
+                ) for mask_name in mask_paths
+            ]
+
+        # create full images paths from folder
+        images_paths = [
+            join_paths(
+                cfg.WORK_DIR,
+                cfg.DATASET[mode].IMAGES_PATH,
+                image_name
+            ) for image_name in images_paths
+        ]
+    else:
+        # read images and mask from absolute paths given in list
+        images_paths = list(cfg.DATASET[mode].IMAGES_PATH)
+        if mask_available:
+            mask_paths = list(cfg.DATASET[mode].MASK_PATH)
+
+    if mask_available:
+        return images_paths, mask_paths
+    else:
+        return images_paths,
