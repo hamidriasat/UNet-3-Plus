@@ -219,7 +219,7 @@ def data_generator(cfg: DictConfig,
                         device="gpu",
                         device_id=device_id,
                         shard_id=device_id,
-                        num_threads=cfg.DATALOADER_WORKERS  # TODO verify num_threads in multi gpu training
+                        num_threads=cfg.DATALOADER_WORKERS
                     ),
                     batch_size=cfg.HYPER_PARAMETERS.BATCH_SIZE,
                     output_shapes=shapes,
@@ -230,7 +230,9 @@ def data_generator(cfg: DictConfig,
         # distribute dataset
         input_options = tf.distribute.InputOptions(
             experimental_place_dataset_on_device=True,
-            experimental_prefetch_to_device=False,  # experimental_fetch_to_device
+            # for older dali versions use experimental_prefetch_to_device
+            # for new dali versions use  experimental_fetch_to_device
+            experimental_fetch_to_device=False,  # experimental_fetch_to_device
             experimental_replication_mode=tf.distribute.InputReplicationMode.PER_REPLICA)
 
         # map dataset to given strategy and return it

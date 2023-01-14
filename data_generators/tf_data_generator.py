@@ -3,7 +3,6 @@ Tensorflow data generator class.
 """
 import tensorflow as tf
 import numpy as np
-import os
 from omegaconf import DictConfig
 
 from utils.general_utils import get_data_paths

@@ -23,8 +23,10 @@ def get_data_generator(cfg: DictConfig,
     Creates and return data generator object based on given type.
     """
     if cfg.DATA_GENERATOR_TYPE == "TF_GENERATOR":
+        print(f"Using TensorFlow generator for {mode} data")
         generator = tf_data_generator(cfg, mode)
     elif cfg.DATA_GENERATOR_TYPE == "DALI_GENERATOR":
+        print(f"Using NVIDIA DALI generator for {mode} data")
         if cfg.USE_MULTI_GPUS.VALUE:
             generator = dali_data_generator(cfg, mode, strategy)
         else:

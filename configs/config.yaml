@@ -26,7 +26,7 @@ DATASET:
 
 MODEL:
   # available variants are unet3plus, unet3plus_deepsup, unet3plus_deepsup_cgm
-  TYPE: "tiny_unet3plus"
+  TYPE: "unet3plus"
   WEIGHTS_FILE_NAME: model_${MODEL.TYPE}
 
 DATA_GENERATOR_TYPE: "TF_GENERATOR"  # options are TF_GENERATOR or DALI_GENERATOR
@@ -47,7 +47,7 @@ OUTPUT:
 
 
 HYPER_PARAMETERS:
-  EPOCHS: 5
+  EPOCHS: 3
   BATCH_SIZE: 2  # specify per gpu batch size
   LEARNING_RATE: 1e-3
 
@@ -96,7 +96,12 @@ USE_MULTI_GPUS:
   # otherwise if positive number, then use given number of gpus.
   # In case list of Integers: each integer will be considered as gpu id
   # e.g. [4, 5, 7] means use gpu 5,6 and 8 for training/evaluation
-  GPU_IDS: -1
+  GPU_IDS: [3, 4, 5, 6, 7]
+  
+  
+OPTIMIZATION:
+  AMP: True  # Automatic Mixed Precision(AMP)
+  XLA: True  # Accelerated Linear Algebra(XLA)
 
 
 # to stop hydra from storing logs files

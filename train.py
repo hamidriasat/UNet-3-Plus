@@ -5,6 +5,7 @@ from datetime import datetime
 import hydra
 from omegaconf import DictConfig
 import tensorflow as tf
+from tensorflow.keras import mixed_precision
 from tensorflow.keras.callbacks import (
     EarlyStopping,
     ModelCheckpoint,
@@ -61,6 +62,15 @@ def train(cfg: DictConfig):
 
     # create folders to store training checkpoints and logs
     create_training_folders(cfg)
+
+    if cfg.OPTIMIZATION.AMP:
+        print("Enabling Automatic Mixed Precision(AMP) training")
+        policy = mixed_precision.Policy('mixed_float16')
+        mixed_precision.set_global_policy(policy)
+
+    if cfg.OPTIMIZATION.XLA:
+        print("Enabling Automatic Mixed Precision(XLA) training")
+        tf.config.optimizer.set_jit(True)
 
     # optimizer
     # TODO update optimizer
