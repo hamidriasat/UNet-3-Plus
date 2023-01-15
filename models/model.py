@@ -12,33 +12,24 @@ def prepare_model(cfg: DictConfig, training=False):
     """
     Creates and return model object based on given model type.
     """
+
+    input_shape = [cfg.INPUT.HEIGHT, cfg.INPUT.WIDTH, cfg.INPUT.CHANNELS]
+
     if cfg.MODEL.TYPE == "tiny_unet3plus":
         return tiny_unet3plus(
-            [
-                cfg.INPUT.HEIGHT,
-                cfg.INPUT.WIDTH,
-                cfg.INPUT.CHANNELS,
-            ],
+            input_shape,
             cfg.OUTPUT.CLASSES,
             training
         )
     elif cfg.MODEL.TYPE == "unet3plus":
+        #  training parameter does not matter in this case
         return unet3plus(
-            [
-                cfg.INPUT.HEIGHT,
-                cfg.INPUT.WIDTH,
-                cfg.INPUT.CHANNELS,
-            ],
-            cfg.OUTPUT.CLASSES,
-            #  training parameter does not matter in this case
+            input_shape,
+            cfg.OUTPUT.CLASSES
         )
     elif cfg.MODEL.TYPE == "unet3plus_deepsup":
         return unet3plus_deepsup(
-            [
-                cfg.INPUT.HEIGHT,
-                cfg.INPUT.WIDTH,
-                cfg.INPUT.CHANNELS,
-            ],
+            input_shape,
             cfg.OUTPUT.CLASSES,
             training
         )
@@ -49,11 +40,7 @@ def prepare_model(cfg: DictConfig, training=False):
                 "\nOnly works when model output classes are equal to 1"
             )
         return unet3plus_deepsup_cgm(
-            [
-                cfg.INPUT.HEIGHT,
-                cfg.INPUT.WIDTH,
-                cfg.INPUT.CHANNELS,
-            ],
+            input_shape,
             cfg.OUTPUT.CLASSES,
             training
         )

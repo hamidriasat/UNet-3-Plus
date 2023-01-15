@@ -8,6 +8,7 @@ from glob import glob
 from pathlib import Path
 from tqdm import tqdm
 import numpy as np
+import multiprocessing as mp
 import cv2
 import nibabel as nib
 import hydra
@@ -106,36 +107,53 @@ def save_mask(scan, save_path, mask_index):
         cv2.imwrite(new_mask_path, scan[:, :, index])  # save grey scale image
 
 
+def extract_image(cfg, image_path, save_path, scan_type="image", ):
+    """
+    Extract image from given scan path
+    """
+    _, index = str(Path(image_path).stem).split("-")
+
+    scan = read_nii(image_path)
+    scan = resize_scan(
+        scan,
+        cfg.DATA_PREPARATION.RESIZED_HEIGHT,
+        cfg.DATA_PREPARATION.RESIZED_WIDTH,
+        scan_type
+    )
+    if scan_type == "image":
+        scan = clip_scan(
+            scan,
+            cfg.DATA_PREPARATION.SCAN_MIN_VALUE,
+            cfg.DATA_PREPARATION.SCAN_MAX_VALUE
+        )
+        scan = linear_scale(scan)
+        scan = np.uint8(scan)
+        save_images(scan, save_path, index)
+    else:
+        # 0 for background/non-lesion, 1 for liver, 2 for lesion/tumor
+        # merging label 2 into label 1, because lesion/tumor is part of liver
+        scan = np.where(scan != 0, 1, scan)
+        # scan = np.where(scan==2, 1, scan)
+        scan = np.uint8(scan)
+        save_mask(scan, save_path, index)
+
+
 def extract_images(cfg, images_path, save_path, scan_type="image", ):
     """
-    Extract images from given scan path
+    Extract images paths using multiprocessing and pass to
+    extract_image function for further processing .
     """
+    # create pool
+    process_count = np.clip(mp.cpu_count() - 2, 1, 20)  # less than 20 workers
+    pool = mp.Pool(process_count)
     for image_path in tqdm(images_path):
-        _, index = str(Path(image_path).stem).split("-")
+        pool.apply_async(extract_image,
+                         args=(cfg, image_path, save_path, scan_type),
+                         )
 
-        scan = read_nii(image_path)
-        scan = resize_scan(
-            scan,
-            cfg.DATA_PREPARATION.RESIZED_HEIGHT,
-            cfg.DATA_PREPARATION.RESIZED_WIDTH,
-            scan_type
-        )
-        if scan_type == "image":
-            scan = clip_scan(
-                scan,
-                cfg.DATA_PREPARATION.SCAN_MIN_VALUE,
-                cfg.DATA_PREPARATION.SCAN_MAX_VALUE
-            )
-            scan = linear_scale(scan)
-            scan = np.uint8(scan)
-            save_images(scan, save_path, index)
-        else:
-            # 0 for background/non-lesion, 1 for liver, 2 for lesion/tumor
-            # merging label 2 into label 1, because lesion/tumor is part of liver
-            scan = np.where(scan != 0, 1, scan)
-            # scan = np.where(scan==2, 1, scan)
-            scan = np.uint8(scan)
-            save_mask(scan, save_path, index)
+    # close pool
+    pool.close()
+    pool.join()
 
 
 @hydra.main(version_base=None, config_path="../configs", config_name="config")

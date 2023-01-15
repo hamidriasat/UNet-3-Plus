@@ -186,7 +186,7 @@ TODO List
 - [x] Complete README.md
 - [x] Add requirements file
 - [ ] Add Data augmentation
-- [ ] Add multiprocessing in LiTS data preprocessing
+- [x] Add multiprocessing in LiTS data preprocessing
 - [ ] Load data through NVIDIA DALI
 
 We appreciate any feedback so reporting problems, and asking questions are welcomed here.
