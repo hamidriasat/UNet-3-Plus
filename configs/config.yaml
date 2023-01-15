@@ -49,7 +49,7 @@ OUTPUT:
 HYPER_PARAMETERS:
   EPOCHS: 3
   BATCH_SIZE: 2  # specify per gpu batch size
-  LEARNING_RATE: 1e-3
+  LEARNING_RATE: 3e-4
 
 
 CALLBACKS:

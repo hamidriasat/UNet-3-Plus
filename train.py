@@ -69,7 +69,7 @@ def train(cfg: DictConfig):
         mixed_precision.set_global_policy(policy)
 
     if cfg.OPTIMIZATION.XLA:
-        print("Enabling Automatic Mixed Precision(XLA) training")
+        print("Enabling Accelerated Linear Algebra(XLA) training")
         tf.config.optimizer.set_jit(True)
 
     # optimizer
