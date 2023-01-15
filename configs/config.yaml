@@ -26,7 +26,7 @@ DATASET:
 
 MODEL:
   # available variants are unet3plus, unet3plus_deepsup, unet3plus_deepsup_cgm
-  TYPE: "unet3plus"
+  TYPE: "tiny_unet3plus"
   WEIGHTS_FILE_NAME: model_${MODEL.TYPE}
 
 DATA_GENERATOR_TYPE: "TF_GENERATOR"  # options are TF_GENERATOR or DALI_GENERATOR
