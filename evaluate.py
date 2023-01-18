@@ -1,15 +1,14 @@
 """
 Evaluation script used to calculate accuracy of trained model
 """
-import os.path
-
+import os
 import hydra
 from omegaconf import DictConfig
 import tensorflow as tf
 from tensorflow.keras import mixed_precision
 
 from data_generators import data_generator
-from utils.general_utils import join_paths, set_gpus, get_gpus_count
+from utils.general_utils import join_paths, set_gpus
 from models.model import prepare_model
 from losses.loss import dice_coef
 from losses.unet_loss import unet3p_hybrid_loss
