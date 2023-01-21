@@ -11,7 +11,7 @@ from .tf_data_generator import DataGenerator as tf_data_generator
 try:
     from .dali_data_generator import data_generator as dali_data_generator
 except ModuleNotFoundError:
-    print("NVIDIA DALI not installed. Please install it from official."
+    print("NVIDIA DALI not installed, please install it."
           "\nNote: DALI is only available on Linux platform. For Window "
           "you can use TensorFlow generator for training.")
 
