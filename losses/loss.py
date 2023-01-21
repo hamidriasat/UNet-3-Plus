@@ -5,17 +5,17 @@ import tensorflow as tf
 import tensorflow.keras.backend as K
 
 
-def iou(y_true, y_pred):
+def iou(y_true, y_pred, smooth=1):
     """
-    Calculate intersection over union (IoU) between images
+    Calculate intersection over union (IoU) between images.
+    Input shape should be Batch x Height x Width x #Classes (BxHxWxN).
+    Using Mean as reduction type for batch values.
     """
-    y_true_f = K.flatten(y_true)
-    y_pred_f = K.flatten(y_pred)
-
-    intersection = K.sum(y_true_f * y_pred_f)
-    union = K.sum(y_true_f + y_pred_f - y_true_f * y_pred_f)
-
-    return intersection / union
+    intersection = K.sum(K.abs(y_true * y_pred), axis=[1, 2, 3])
+    union = K.sum(y_true, [1, 2, 3]) + K.sum(y_pred, [1, 2, 3])
+    union = union - intersection
+    iou = K.mean((intersection + smooth) / (union + smooth), axis=0)
+    return iou
 
 
 def iou_loss(y_true, y_pred):
@@ -48,14 +48,20 @@ def focal_loss(y_true, y_pred):
 
 def ssim_loss(y_true, y_pred):
     """
-    Structural Similarity Index loss
+    Structural Similarity Index loss.
+    Input shape should be Batch x Height x Width x #Classes (BxHxWxN).
+    Using Mean as reduction type for batch values.
     """
-    return 1 - tf.image.ssim(y_true, y_pred, max_val=1)
+    ssim_value = tf.image.ssim(y_true, y_pred, max_val=1)
+    return K.mean(1 - ssim_value, axis=0)
 
 
 def dice_coef(y_true, y_pred, smooth=1.e-9):
     """
-    Calculate dice coefficient
+    Calculate dice coefficient.
+    Input shape should be Batch x Height x Width x #Classes (BxHxWxN).
+    Using Mean as reduction type for batch values.
     """
-    intersection = K.sum(K.abs(y_true * y_pred), axis=-1)
-    return (2. * intersection + smooth) / (K.sum(K.square(y_true), -1) + K.sum(K.square(y_pred), -1) + smooth)
+    intersection = K.sum(y_true * y_pred, axis=[1, 2, 3])
+    union = K.sum(y_true, axis=[1, 2, 3]) + K.sum(y_pred, axis=[1, 2, 3])
+    return K.mean((2. * intersection + smooth) / (union + smooth), axis=0)

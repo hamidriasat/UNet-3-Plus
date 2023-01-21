@@ -1,8 +1,7 @@
 """
 Evaluation script used to calculate accuracy of trained model
 """
-import os.path
-
+import os
 import hydra
 from omegaconf import DictConfig
 import tensorflow as tf
