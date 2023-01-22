@@ -10,6 +10,7 @@
 
 - [UNet 3+](https://arxiv.org/abs/2004.08790) for Image Segmentation in Tensorflow Keras.
     - [Table of Contents](#table-of-contents)
+    - [Feature Support Matrix](#feature-support-matrix)
     - [Installation](#installation)
     - [Code Structure](#code-structure)
     - [Config](#config)
@@ -17,6 +18,44 @@
     - [Models](#models)
     - [Training & Evaluation](#training--evaluation)
     - [Inference Demo](#inference-demo)
+
+## Feature Support Matrix
+
+The following features are supported by our code base:
+
+|                  Feature                   | UNet3+ Supports |
+|:------------------------------------------:|:---------------:|
+|                    DALI                    |     &check;     |
+|       TensorFlow Multi-GPU Training        |     &check;     |
+| TensorFlow Automatic Mixed Precision(AMP)  |     &check;     |
+| TensorFlow Accelerated Linear Algebra(XLA) |     &check;     |
+
+#### [NVIDIA DALI](https://docs.nvidia.com/deeplearning/dali/user-guide/docs/index.html)
+
+The NVIDIA Data Loading Library (DALI) is a library for data loading and
+pre-processing to accelerate deep learning applications. It provides a
+collection of highly optimized building blocks for loading and processing
+image, video and audio data. It can be used as a portable drop-in
+replacement for built in data loaders and data iterators in popular deep
+learning frameworks.
+
+#### [TensorFlow Multi-GPU Training](https://www.tensorflow.org/guide/distributed_training)
+
+Distribute training across multiple GPUs, multiple machines, or TPUs.
+
+#### [TensorFlow Automatic Mixed Precision(AMP)](https://www.tensorflow.org/guide/mixed_precision)
+
+Mixed precision is the use of both 16-bit and 32-bit floating-point types in a model during training to make it run
+faster and use less memory. By keeping certain parts of the model in the 32-bit types for numeric stability, the model
+will have a lower step time and train equally as well in terms of the evaluation metrics such as accuracy.
+
+#### [TensorFlow Accelerated Linear Algebra(XLA)](https://www.tensorflow.org/xla)
+
+In a TensorFlow program, all of the operations are executed individually by the TensorFlow executor. Each TensorFlow
+operation has a precompiled GPU kernel implementation that the executor dispatches to.
+XLA provides an alternative mode of running models: it compiles the TensorFlow graph into a sequence of computation
+kernels generated specifically for the given model. Because these kernels are unique to the model, they can exploit
+model-specific information for optimization.
 
 ## Installation
 
@@ -47,6 +86,7 @@ pip install -r requirements.txt
 - **checkpoint**: Model checkpoint and logs directory
 - **configs**: Configuration file
 - **data**: Dataset files (see [Data Preparation](#data-preparation)) for more details
+- **data_generators**: Data loaders for UNet3+
 - **data_preparation**: For LiTS data preparation and data verification
 - **losses**: Implementations of UNet3+ hybrid loss function and dice coefficient
 - **models**: Unet3+ model files
@@ -62,6 +102,11 @@ pip install -r requirements.txt
 
 Configurations are passed through `yaml` file. For more details on config file read [here](/configs/).
 
+## Data Generators
+
+We support two types of data loaders. `NVIDIA DALI` and `TensorFlow Sequence`
+generators. For more details on supported generator types read [here](/data_generators/).
+
 ## Data Preparation
 
 - This code can be used to reproduce UNet3+ paper results
@@ -71,6 +116,13 @@ Configurations are passed through `yaml` file. For more details on config file r
 For dataset preparation read [here](/data_preparation/README.md).
 
 ## Models
+
+UNet 3+ is lateset from Unet family, proposed for sementic image segmentation. it takes advantage of full-scale skip
+connections and deep supervisions.The full-scale skip connections incorporate low-level details with high-level
+semantics from feature maps in different scales; while the deep supervision learns hierarchical representations from the
+full-scale aggregated feature maps.
+![alt text](/figures/unet3p_architecture.png)
+Figure 1. UNet3+ architecture diagram from original paper
 
 This repo contains all three versions of UNet3+.
 
@@ -165,7 +217,7 @@ H:\\Projects\\UNet3P\\data\\val\\mask\\mask_0_21.png^
 ]
 ```
 
-For your own data visualization set `SHOW_CENTER_CHANNEL_IMAGE=False`. This should set True for only UNet3+ LiTS data.
+For custom data visualization set `SHOW_CENTER_CHANNEL_IMAGE=False`. This should set True for only UNet3+ LiTS data.
 
 These commands are tested on Windows. For Linux replace `^` with \ and replace `H:\\Projects` with your own base path
 
