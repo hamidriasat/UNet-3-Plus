@@ -47,7 +47,7 @@ OUTPUT:
 
 
 HYPER_PARAMETERS:
-  EPOCHS: 3
+  EPOCHS: 30
   BATCH_SIZE: 2  # specify per gpu batch size
   LEARNING_RATE: 3e-4  # 1e-3
 
@@ -100,8 +100,8 @@ USE_MULTI_GPUS:
 
 
 OPTIMIZATION:
-  AMP: True  # Automatic Mixed Precision(AMP)
-  XLA: True  # Accelerated Linear Algebra(XLA)
+  AMP: False  # Automatic Mixed Precision(AMP)
+  XLA: False  # Accelerated Linear Algebra(XLA)
 
 
 # to stop hydra from storing logs files

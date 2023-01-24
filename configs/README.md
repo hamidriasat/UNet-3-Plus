@@ -8,7 +8,7 @@ and [interpolate](https://hydra.cc/docs/advanced/override_grammar/basic/#primiti
 through command line.
 
 Most of the configurations attributes in our [config](/configs/config.yaml) are self-explanatory. However, for some
-attributes additions comments are added.
+attributes additional comments are added.
 You can override configurations from command line too, but it's advisable to override them from config file because it's
 easy.
 

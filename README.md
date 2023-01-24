@@ -122,7 +122,8 @@ connections and deep supervisions.The full-scale skip connections incorporate lo
 semantics from feature maps in different scales; while the deep supervision learns hierarchical representations from the
 full-scale aggregated feature maps.
 ![alt text](/figures/unet3p_architecture.png)
-Figure 1. UNet3+ architecture diagram from original paper
+
+Figure 1. UNet3+ architecture diagram from [original paper](https://arxiv.org/abs/2004.08790).
 
 This repo contains all three versions of UNet3+.
 
