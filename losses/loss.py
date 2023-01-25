@@ -58,10 +58,12 @@ def ssim_loss(y_true, y_pred):
 
 def dice_coef(y_true, y_pred, smooth=1.e-9):
     """
-    Calculate dice coefficient.
-    Input shape should be Batch x Height x Width x #Classes (BxHxWxN).
+    Calculate dice coefficient. Can handle dynamic shape.
+    Could be Batch x Height x Width x #Classes (BxHxWxN) or
+    Batch x Height x Width (BxHxW)
     Using Mean as reduction type for batch values.
     """
-    intersection = K.sum(y_true * y_pred, axis=[1, 2, 3])
-    union = K.sum(y_true, axis=[1, 2, 3]) + K.sum(y_pred, axis=[1, 2, 3])
+    axis = range(1, len(K.int_shape(y_true)))  # dynamic axis
+    intersection = K.sum(y_true * y_pred, axis=axis)
+    union = K.sum(y_true, axis=axis) + K.sum(y_pred, axis=axis)
     return K.mean((2. * intersection + smooth) / (union + smooth), axis=0)
