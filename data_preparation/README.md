@@ -37,8 +37,7 @@ To prepare LiTS dataset for training run
 python data_preparation/preprocess_data.py
 ```
 
-> Note: Because of the extensive preprocessing, each scan takes approximately 3-4 minutes, depending on the size, so
-> relax and wait.
+> Note: Because of the extensive preprocessing, it will take some time, so relax and wait.
 
 #### Final directory
 
