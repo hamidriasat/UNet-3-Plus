@@ -112,8 +112,12 @@ def unet3plus_deepsup(input_shape, output_channels, training=False):
 
     # last layer does not have batch norm and relu
     d1 = conv_block(d1, output_channels, n=1, is_bn=False, is_relu=False)
-    # d1 = k.activations.softmax(d1)
-    d1 = k.layers.Activation('softmax', dtype='float32')(d1)
+
+    if output_channels == 1:
+        d1 = k.layers.Activation('sigmoid', dtype='float32')(d1)
+    else:
+        # d1 = k.activations.softmax(d1)
+        d1 = k.layers.Activation('softmax', dtype='float32')(d1)
 
     """ Deep Supervision Part"""
     if training:
@@ -128,10 +132,16 @@ def unet3plus_deepsup(input_shape, output_channels, training=False):
         d4 = k.layers.UpSampling2D(size=(8, 8), interpolation='bilinear')(d4)
         e5 = k.layers.UpSampling2D(size=(16, 16), interpolation='bilinear')(e5)
 
-        d2 = k.layers.Activation('softmax', dtype='float32')(d2)
-        d3 = k.layers.Activation('softmax', dtype='float32')(d3)
-        d4 = k.layers.Activation('softmax', dtype='float32')(d4)
-        e5 = k.layers.Activation('softmax', dtype='float32')(e5)
+        if output_channels == 1:
+            d2 = k.layers.Activation('sigmoid', dtype='float32')(d2)
+            d3 = k.layers.Activation('sigmoid', dtype='float32')(d3)
+            d4 = k.layers.Activation('sigmoid', dtype='float32')(d4)
+            e5 = k.layers.Activation('sigmoid', dtype='float32')(e5)
+        else:
+            d2 = k.layers.Activation('softmax', dtype='float32')(d2)
+            d3 = k.layers.Activation('softmax', dtype='float32')(d3)
+            d4 = k.layers.Activation('softmax', dtype='float32')(d4)
+            e5 = k.layers.Activation('softmax', dtype='float32')(e5)
 
     if training:
         return tf.keras.Model(inputs=input_layer, outputs=[d1, d2, d3, d4, e5], name='UNet3Plus_DeepSup')

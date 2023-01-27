@@ -71,8 +71,9 @@ def data_generator_pipeline(cfg: DictConfig, mode: str, mask_available: bool):
                     mean=0,
                     stddev=cfg.PREPROCESS_DATA.NORMALIZE_MASK.NORMALIZE_VALUE,
                 )
-            labels = fn.squeeze(labels, axes=[2])
-            labels = fn.one_hot(labels, num_classes=cfg.OUTPUT.CLASSES)
+            if cfg.OUTPUT.CLASSES != 1:
+                labels = fn.squeeze(labels, axes=[2])
+                labels = fn.one_hot(labels, num_classes=cfg.OUTPUT.CLASSES)
 
         if mask_available:
             return images, labels
@@ -138,8 +139,9 @@ def data_generator_pipeline(cfg: DictConfig, mode: str, mask_available: bool):
                     mean=0,
                     stddev=cfg.PREPROCESS_DATA.NORMALIZE_MASK.NORMALIZE_VALUE,
                 )
-            labels = fn.squeeze(labels, axes=[2])
-            labels = fn.one_hot(labels, num_classes=cfg.OUTPUT.CLASSES)
+            if cfg.OUTPUT.CLASSES != 1:
+                labels = fn.squeeze(labels, axes=[2])
+                labels = fn.one_hot(labels, num_classes=cfg.OUTPUT.CLASSES)
 
         if mask_available:
             return images, labels

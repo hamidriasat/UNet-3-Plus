@@ -89,7 +89,7 @@ def train(cfg: DictConfig):
         with strategy.scope():
             model = prepare_model(cfg, training=True)
     else:
-        model = prepare_model(cfg, training=True)
+        model = prepare_model(cfg, training=False)
 
     model.compile(
         optimizer=optimizer,

@@ -36,7 +36,7 @@ def unet3plus_deepsup_cgm(input_shape, output_channels, training=False):
     cls = k.layers.Dropout(rate=0.5)(e5)
     cls = k.layers.Conv2D(2, kernel_size=(1, 1), padding="same", strides=(1, 1))(cls)
     cls = k.layers.GlobalMaxPooling2D()(cls)
-    cls = k.activations.sigmoid(cls)
+    cls = k.layers.Activation('sigmoid', dtype='float32')(cls)
     cls = tf.argmax(cls, axis=-1)
     cls = cls[..., tf.newaxis]
     cls = tf.cast(cls, dtype=tf.float32, )
@@ -135,7 +135,7 @@ def unet3plus_deepsup_cgm(input_shape, output_channels, training=False):
 
     """ Classification Guided Module. Part 2"""
     d1 = dot_product(d1, cls)
-    d1 = k.activations.sigmoid(d1)
+    d1 = k.layers.Activation('sigmoid', dtype='float32')(d1)
 
     if training:
         d2 = dot_product(d2, cls)
@@ -143,10 +143,10 @@ def unet3plus_deepsup_cgm(input_shape, output_channels, training=False):
         d4 = dot_product(d4, cls)
         e5 = dot_product(e5, cls)
 
-        d2 = k.activations.sigmoid(d2)
-        d3 = k.activations.sigmoid(d3)
-        d4 = k.activations.sigmoid(d4)
-        e5 = k.activations.sigmoid(e5)
+        d2 = k.layers.Activation('sigmoid', dtype='float32')(d2)
+        d3 = k.layers.Activation('sigmoid', dtype='float32')(d3)
+        d4 = k.layers.Activation('sigmoid', dtype='float32')(d4)
+        e5 = k.layers.Activation('sigmoid', dtype='float32')(e5)
 
     if training:
         return tf.keras.Model(inputs=input_layer, outputs=[d1, d2, d3, d4, e5, cls], name='UNet3Plus_DeepSup_CGM')

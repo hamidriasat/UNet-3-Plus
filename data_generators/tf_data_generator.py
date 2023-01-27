@@ -150,13 +150,16 @@ class DataGenerator(tf.keras.utils.Sequence):
             batch_images[i] = image
 
             if self.mask_available:
-                # convert mask into one hot vectors
                 # height x width --> height x width x output classes
-                mask = tf.one_hot(
-                    mask,
-                    self.cfg.OUTPUT.CLASSES,
-                    dtype=tf.int32
-                )
+                if self.cfg.OUTPUT.CLASSES == 1:
+                    mask = tf.expand_dims(mask, axis=-1)
+                else:
+                    # convert mask into one hot vectors
+                    mask = tf.one_hot(
+                        mask,
+                        self.cfg.OUTPUT.CLASSES,
+                        dtype=tf.int32
+                    )
                 mask.set_shape(
                     [
                         self.cfg.INPUT.HEIGHT,

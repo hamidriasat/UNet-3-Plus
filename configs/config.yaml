@@ -43,7 +43,7 @@ INPUT:
 
 # Model output classes
 OUTPUT:
-  CLASSES: 2
+  CLASSES: 1
 
 
 HYPER_PARAMETERS:
