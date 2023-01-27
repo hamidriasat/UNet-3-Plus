@@ -111,7 +111,7 @@ def unet3plus_deepsup(input_shape, output_channels, training=False):
     d1 = conv_block(d1, upsample_channels, n=1)  # 320*320*320 --> 320*320*320
 
     # last layer does not have batch norm and relu
-    d1 = conv_block(d1, OUTPUT_CHANNELS, n=1, is_bn=False, is_relu=False)
+    d1 = conv_block(d1, output_channels, n=1, is_bn=False, is_relu=False)
     # d1 = k.activations.softmax(d1)
     d1 = k.layers.Activation('softmax', dtype='float32')(d1)
 
