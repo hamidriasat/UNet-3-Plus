@@ -3,38 +3,19 @@ UNet3+ base model
 """
 import tensorflow as tf
 import tensorflow.keras as k
-from .unet3plus_utils import conv_block
+# from .unet3plus_utils import conv_block
+from unet3plus_utils import conv_block
 
 
-def unet3plus(input_shape, output_channels):
+def unet3plus(encoder_layer, output_channels, filters):
     """ UNet3+ base model """
-    filters = [64, 128, 256, 512, 1024]
 
-    input_layer = k.layers.Input(
-        shape=input_shape,
-        name="input_layer"
-    )  # 320*320*3
-
-    """ Encoder"""
-    # block 1
-    e1 = conv_block(input_layer, filters[0])  # 320*320*64
-
-    # block 2
-    e2 = k.layers.MaxPool2D(pool_size=(2, 2))(e1)  # 160*160*64
-    e2 = conv_block(e2, filters[1])  # 160*160*128
-
-    # block 3
-    e3 = k.layers.MaxPool2D(pool_size=(2, 2))(e2)  # 80*80*128
-    e3 = conv_block(e3, filters[2])  # 80*80*256
-
-    # block 4
-    e4 = k.layers.MaxPool2D(pool_size=(2, 2))(e3)  # 40*40*256
-    e4 = conv_block(e4, filters[3])  # 40*40*512
-
-    # block 5
-    # bottleneck layer
-    e5 = k.layers.MaxPool2D(pool_size=(2, 2))(e4)  # 20*20*512
-    e5 = conv_block(e5, filters[4])  # 20*20*1024
+    """ Encoder """
+    e1 = encoder_layer[0]
+    e2 = encoder_layer[1]
+    e3 = encoder_layer[2]
+    e4 = encoder_layer[3]
+    e5 = encoder_layer[4]
 
     """ Decoder """
     cat_channels = filters[0]
@@ -119,16 +100,14 @@ def unet3plus(input_shape, output_channels):
     if output_channels == 1:
         output = k.layers.Activation('sigmoid', dtype='float32')(d)
     else:
-        # output = k.activations.softmax(d, )
         output = k.layers.Activation('softmax', dtype='float32')(d)
 
-    return tf.keras.Model(inputs=input_layer, outputs=[output], name='UNet_3Plus')
+    return output, 'UNet_3Plus'
 
 
 def tiny_unet3plus(input_shape, output_channels, training):
     """ Sample model only for testing during development """
     filters = [64, 128, 256, 512, 1024]
-
     input_layer = k.layers.Input(shape=input_shape, name="input_layer")  # 320*320*3
 
     """ Encoder"""
@@ -156,16 +135,3 @@ def tiny_unet3plus(input_shape, output_channels, training):
         return tf.keras.Model(inputs=input_layer, outputs=[output, output2], name='UNet3Plus')
     else:
         return tf.keras.Model(inputs=input_layer, outputs=[output], name='UNet3Plus')
-
-
-if __name__ == "__main__":
-    """## Model Compilation"""
-    INPUT_SHAPE = [320, 320, 1]
-    OUTPUT_CHANNELS = 1
-
-    unet_3P = unet3plus(INPUT_SHAPE, OUTPUT_CHANNELS)
-    unet_3P.summary()
-
-    # tf.keras.utils.plot_model(unet_3P, show_layer_names=True, show_shapes=True)
-
-    # unet_3P.save("unet_3P.hdf5")
