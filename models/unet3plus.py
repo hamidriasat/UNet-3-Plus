@@ -3,8 +3,7 @@ UNet3+ base model
 """
 import tensorflow as tf
 import tensorflow.keras as k
-# from .unet3plus_utils import conv_block
-from unet3plus_utils import conv_block
+from .unet3plus_utils import conv_block
 
 
 def unet3plus(encoder_layer, output_channels, filters):

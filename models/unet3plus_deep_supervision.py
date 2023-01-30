@@ -3,8 +3,7 @@ UNet3+ with Deep Supervision
 """
 import tensorflow as tf
 import tensorflow.keras as k
-# from .unet3plus_utils import conv_block
-from unet3plus_utils import conv_block
+from .unet3plus_utils import conv_block
 
 
 def unet3plus_deepsup(encoder_layer, output_channels, filters, training=False):
@@ -131,6 +130,3 @@ def unet3plus_deepsup(encoder_layer, output_channels, filters, training=False):
         return [d1, d2, d3, d4, e5], 'UNet3Plus_DeepSup'
     else:
         return [d1, ], 'UNet3Plus_DeepSup'
-
-
-

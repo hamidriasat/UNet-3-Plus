@@ -3,8 +3,7 @@ UNet_3Plus with Deep Supervision and Classification Guided Module
 """
 import tensorflow as tf
 import tensorflow.keras as k
-# from .unet3plus_utils import conv_block, dot_product
-from unet3plus_utils import conv_block, dot_product
+from .unet3plus_utils import conv_block, dot_product
 
 
 def unet3plus_deepsup_cgm(encoder_layer, output_channels, filters, training=False):
