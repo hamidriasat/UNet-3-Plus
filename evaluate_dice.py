@@ -12,7 +12,7 @@ from utils.general_utils import join_paths, set_gpus, suppress_tf_warnings
 from utils.images_utils import postprocess_mask
 from data_generators import data_generator
 from models.model import prepare_model
-from losses.loss import dice_coef
+from losses.loss import DiceCoefficient
 
 
 def evaluate_batch(model, images, masks, classes):
@@ -32,7 +32,9 @@ def evaluate_batch(model, images, masks, classes):
     masks = tf.convert_to_tensor(masks)
     predictions = tf.convert_to_tensor(predictions)
 
-    dice_value = dice_coef(masks, predictions)
+    # by default classes=2,
+    dice_value = DiceCoefficient(post_processed=False, classes=2)
+    dice_value = dice_value(masks, predictions)
     return tf.get_static_value(dice_value)
 
 

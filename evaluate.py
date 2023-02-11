@@ -10,7 +10,7 @@ from tensorflow.keras import mixed_precision
 from data_generators import data_generator
 from utils.general_utils import join_paths, set_gpus
 from models.model import prepare_model
-from losses.loss import dice_coef
+from losses.loss import DiceCoefficient
 from losses.unet_loss import unet3p_hybrid_loss
 
 
@@ -54,7 +54,9 @@ def evaluate(cfg: DictConfig):
     model.compile(
         optimizer=optimizer,
         loss=unet3p_hybrid_loss,
-        metrics=[dice_coef],
+        metrics=[
+            DiceCoefficient(post_processed=True, classes=cfg.OUTPUT.CLASSES)
+        ],
     )
 
     # weights model path
