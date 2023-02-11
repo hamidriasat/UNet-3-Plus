@@ -66,13 +66,13 @@ def predict(cfg: DictConfig):
 
             # do postprocessing on predicted mask
             prediction = batch_predictions[index]
-            prediction = postprocess_mask(prediction)
+            prediction = postprocess_mask(prediction, cfg.OUTPUT.CLASSES)
             # denormalize mask for better visualization
             prediction = denormalize_mask(prediction, cfg.OUTPUT.CLASSES)
 
             if mask_available:
                 mask = batch_mask[index]
-                mask = postprocess_mask(mask)
+                mask = postprocess_mask(mask, cfg.OUTPUT.CLASSES)
                 mask = denormalize_mask(mask, cfg.OUTPUT.CLASSES)
 
             # if np.unique(mask).shape[0] == 2:

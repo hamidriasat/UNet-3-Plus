@@ -15,7 +15,8 @@ from tensorflow.keras.callbacks import (
 
 from data_generators import data_generator
 from data_preparation.verify_data import verify_data
-from utils.general_utils import create_directory, join_paths, set_gpus
+from utils.general_utils import create_directory, join_paths, set_gpus, \
+    suppress_tf_warnings
 from models.model import prepare_model
 from losses.loss import dice_coef
 from losses.unet_loss import unet3p_hybrid_loss
@@ -43,6 +44,9 @@ def train(cfg: DictConfig):
     """
     Training method
     """
+
+    # suppress TensorFlow warnings
+    suppress_tf_warnings()
 
     print("Verifying data ...")
     verify_data(cfg)

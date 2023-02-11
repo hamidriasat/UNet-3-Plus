@@ -71,7 +71,9 @@ def data_generator_pipeline(cfg: DictConfig, mode: str, mask_available: bool):
                     mean=0,
                     stddev=cfg.PREPROCESS_DATA.NORMALIZE_MASK.NORMALIZE_VALUE,
                 )
-            if cfg.OUTPUT.CLASSES != 1:
+            if cfg.OUTPUT.CLASSES == 1:
+                labels = fn.cast(labels, dtype=types.FLOAT)
+            else:
                 labels = fn.squeeze(labels, axes=[2])
                 labels = fn.one_hot(labels, num_classes=cfg.OUTPUT.CLASSES)
 
@@ -139,7 +141,9 @@ def data_generator_pipeline(cfg: DictConfig, mode: str, mask_available: bool):
                     mean=0,
                     stddev=cfg.PREPROCESS_DATA.NORMALIZE_MASK.NORMALIZE_VALUE,
                 )
-            if cfg.OUTPUT.CLASSES != 1:
+            if cfg.OUTPUT.CLASSES == 1:
+                labels = fn.cast(labels, dtype=types.FLOAT)
+            else:
                 labels = fn.squeeze(labels, axes=[2])
                 labels = fn.one_hot(labels, num_classes=cfg.OUTPUT.CLASSES)
 

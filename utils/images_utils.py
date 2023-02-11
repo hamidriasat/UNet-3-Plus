@@ -71,12 +71,15 @@ def image_to_mask_name(image_name: str):
     return image_name.replace('image', 'mask')
 
 
-def postprocess_mask(mask, output_type=np.int32):
+def postprocess_mask(mask, classes, output_type=np.int32):
     """
     Post process model output.
     Covert probabilities into indexes based on maximum value.
     """
-    mask = np.argmax(mask, axis=-1)
+    if classes == 1:
+        mask = np.where(mask > .5, 1.0, 0.0)
+    else:
+        mask = np.argmax(mask, axis=-1)
     return mask.astype(output_type)
 
 

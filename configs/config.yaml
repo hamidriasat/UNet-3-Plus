@@ -52,9 +52,9 @@ OUTPUT:
 
 
 HYPER_PARAMETERS:
-  EPOCHS: 30
+  EPOCHS: 100
   BATCH_SIZE: 2  # specify per gpu batch size
-  LEARNING_RATE: 3e-4  # 1e-3
+  LEARNING_RATE: 5e-5  # 0.1, 1e-3, 3e-4, 5e-5
 
 
 CALLBACKS:
@@ -63,7 +63,7 @@ CALLBACKS:
     PATH: "/checkpoint/tb_logs"
 
   EARLY_STOPPING:
-    PATIENCE: 20
+    PATIENCE: 100
 
   MODEL_CHECKPOINT:
     PATH: "/checkpoint"

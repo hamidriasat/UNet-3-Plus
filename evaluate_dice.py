@@ -15,7 +15,7 @@ from models.model import prepare_model
 from losses.loss import dice_coef
 
 
-def evaluate_batch(model, images, masks):
+def evaluate_batch(model, images, masks, classes):
     """
     Make prediction on single batch and return dice coefficient
     """
@@ -25,8 +25,8 @@ def evaluate_batch(model, images, masks):
         predictions = predictions[0]
 
     # do postprocessing
-    masks = postprocess_mask(masks, float)
-    predictions = postprocess_mask(predictions, float)
+    masks = postprocess_mask(masks, classes, float)
+    predictions = postprocess_mask(predictions, classes, float)
 
     # convert to tf tensor
     masks = tf.convert_to_tensor(masks)
@@ -103,10 +103,20 @@ def evaluate(cfg: DictConfig, mode="VAL"):
             batch_mask = batch_mask.values
 
             for batch_images_, batch_mask_ in zip(batch_images, batch_mask):
-                dice_value = evaluate_batch(model, batch_images_, batch_mask_)
+                dice_value = evaluate_batch(
+                    model,
+                    batch_images_,
+                    batch_mask_,
+                    cfg.OUTPUT.CLASSES
+                )
                 results.append(dice_value)
         else:
-            dice_value = evaluate_batch(model, batch_images, batch_mask)
+            dice_value = evaluate_batch(
+                model,
+                batch_images,
+                batch_mask,
+                cfg.OUTPUT.CLASSES
+            )
             results.append(dice_value)
 
         progress_bar.update(1)
