@@ -1,7 +1,7 @@
 """
 Training script
 """
-from datetime import datetime
+from datetime import datetime, timedelta
 import hydra
 from omegaconf import DictConfig
 import tensorflow as tf
@@ -20,6 +20,7 @@ from utils.general_utils import create_directory, join_paths, set_gpus, \
 from models.model import prepare_model
 from losses.loss import DiceCoefficient
 from losses.unet_loss import unet3p_hybrid_loss
+from callbacks.timing_callback import TimingCallback
 
 
 def create_training_folders(cfg: DictConfig):
@@ -151,7 +152,8 @@ def train(cfg: DictConfig):
     if len(model.outputs) > 1:
         evaluation_metric = f"val_{model.output_names[0]}_dice_coef"
 
-    # TensorBoard, EarlyStopping, ModelCheckpoint and CSVLogger callbacks
+    # Timing, TensorBoard, EarlyStopping, ModelCheckpoint, CSVLogger callbacks
+    timing_callback = TimingCallback()
     callbacks = [
         TensorBoard(log_dir=tb_log_dir, write_graph=False, profile_batch=0),
         EarlyStopping(
@@ -170,7 +172,8 @@ def train(cfg: DictConfig):
         CSVLogger(
             csv_log_path,
             append=cfg.CALLBACKS.CSV_LOGGER.APPEND_LOGS
-        )
+        ),
+        timing_callback
     ]
 
     training_steps = data_generator.get_iterations(cfg, mode="TRAIN")
@@ -186,6 +189,10 @@ def train(cfg: DictConfig):
         callbacks=callbacks,
         workers=cfg.DATALOADER_WORKERS,
     )
+
+    training_time = timing_callback.train_end_time - timing_callback.train_start_time
+    training_time = timedelta(seconds=training_time)
+    print(f"Training time {training_time}")
 
 
 @hydra.main(version_base=None, config_path="configs", config_name="config")

@@ -2,6 +2,7 @@
 Evaluation script used to calculate accuracy of trained model
 """
 import os
+import numpy as np
 import hydra
 from omegaconf import DictConfig
 import tensorflow as tf
@@ -12,6 +13,7 @@ from utils.general_utils import join_paths, set_gpus
 from models.model import prepare_model
 from losses.loss import DiceCoefficient
 from losses.unet_loss import unet3p_hybrid_loss
+from callbacks.timing_callback import TimingCallback
 
 
 def evaluate(cfg: DictConfig):
@@ -34,10 +36,6 @@ def evaluate(cfg: DictConfig):
         print("Enabling Automatic Mixed Precision(XLA) training")
         tf.config.optimizer.set_jit(True)
 
-    # load training settings
-    optimizer = tf.keras.optimizers.Adam(
-        learning_rate=cfg.HYPER_PARAMETERS.LEARNING_RATE
-    )
     # create model
     strategy = None
     if cfg.USE_MULTI_GPUS.VALUE:
@@ -47,9 +45,25 @@ def evaluate(cfg: DictConfig):
         )
         print('Number of visible gpu devices: {}'.format(strategy.num_replicas_in_sync))
         with strategy.scope():
-            model = prepare_model(cfg)
+            optimizer = tf.keras.optimizers.Adam(
+                learning_rate=cfg.HYPER_PARAMETERS.LEARNING_RATE
+            )  # optimizer
+            if cfg.OPTIMIZATION.AMP:
+                optimizer = mixed_precision.LossScaleOptimizer(
+                    optimizer,
+                    dynamic=True
+                )
+            model = prepare_model(cfg, training=True)
     else:
-        model = prepare_model(cfg)
+        optimizer = tf.keras.optimizers.Adam(
+            learning_rate=cfg.HYPER_PARAMETERS.LEARNING_RATE
+        )  # optimizer
+        if cfg.OPTIMIZATION.AMP:
+            optimizer = mixed_precision.LossScaleOptimizer(
+                optimizer,
+                dynamic=True
+            )
+        model = prepare_model(cfg, training=True)
 
     model.compile(
         optimizer=optimizer,
@@ -82,16 +96,18 @@ def evaluate(cfg: DictConfig):
     evaluation_metric = "dice_coef"
     if len(model.outputs) > 1:
         evaluation_metric = f"{model.output_names[0]}_dice_coef"
+    timing_callback = TimingCallback()
 
     result = model.evaluate(
         x=val_generator,
         steps=validation_steps,
+        callbacks=[timing_callback],
         workers=cfg.DATALOADER_WORKERS,
         return_dict=True,
     )
 
-    # return computed loss, validation accuracy and it's metric name
-    return result, evaluation_metric
+    # return computed loss, validation accuracy, metric name, prediction time
+    return result, evaluation_metric, timing_callback.prediction_time
 
 
 @hydra.main(version_base=None, config_path="configs", config_name="config")
@@ -99,9 +115,17 @@ def main(cfg: DictConfig):
     """
     Read config file and pass to evaluate method
     """
-    result, evaluation_metric = evaluate(cfg)
+    result, evaluation_metric, time_taken = evaluate(cfg)
     print(result)
     print(f"Validation dice coefficient: {result[evaluation_metric]}")
+
+    mean_time = np.mean(time_taken)
+    mean_fps = 1 / mean_time
+    print(f"Mean Time: {mean_time:1.7f} - Mean FPS: {mean_fps:1.7f}")
+
+    avg_step_time = np.mean(time_taken)
+    print("\nAverage step time: %.1f msec" % (avg_step_time * 1e3))
+    print("Average throughput: %d samples/sec" % (1 / avg_step_time))
 
 
 if __name__ == "__main__":
