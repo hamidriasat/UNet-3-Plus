@@ -37,6 +37,7 @@ def prepare_model(cfg: DictConfig, training=False):
             "Wrong backbone type passed."
             "\nPlease check config file for possible options."
         )
+    print(f"Using {cfg.MODEL.BACKBONE.TYPE} as a backbone.")
 
     if cfg.MODEL.TYPE == "tiny_unet3plus":
         return tiny_unet3plus(
