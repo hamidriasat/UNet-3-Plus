@@ -31,8 +31,6 @@ MODEL:
   BACKBONE:
     # available variants are unet3plus, vgg16, vgg19
     TYPE: "unet3plus"
-    # weights_path is not applicable for unet3plus backbone
-    WEIGHTS_PATH: checkpoint/backbones/${MODEL.BACKBONE.TYPE}_imagenet_weights.h5
 
 DATA_GENERATOR_TYPE: "TF_GENERATOR"  # options are TF_GENERATOR or DALI_GENERATOR
 SEED: 5  # for result's reproducibility

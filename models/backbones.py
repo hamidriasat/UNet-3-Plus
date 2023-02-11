@@ -6,12 +6,12 @@ import tensorflow.keras as k
 from .unet3plus_utils import conv_block
 
 
-def vgg16_backbone(input_layer, weights_path):
+def vgg16_backbone(input_layer, ):
     """ VGG-16 backbone as encoder for UNet3P """
 
     base_model = tf.keras.applications.VGG16(
         input_tensor=input_layer,
-        weights=weights_path,
+        weights=None,
         include_top=False
     )
 
@@ -29,12 +29,12 @@ def vgg16_backbone(input_layer, weights_path):
     return [e1, e2, e3, e4, e5]
 
 
-def vgg19_backbone(input_layer, weights_path):
+def vgg19_backbone(input_layer, ):
     """ VGG-19 backbone as encoder for UNet3P """
 
     base_model = tf.keras.applications.VGG19(
         input_tensor=input_layer,
-        weights=weights_path,
+        weights=None,
         include_top=False
     )
 

@@ -3,7 +3,6 @@ Returns Unet3+ model
 """
 import tensorflow as tf
 from omegaconf import DictConfig
-from utils.general_utils import join_paths
 
 from .backbones import vgg16_backbone, vgg19_backbone, unet3plus_backbone
 from .unet3plus import unet3plus, tiny_unet3plus
@@ -30,15 +29,9 @@ def prepare_model(cfg: DictConfig, training=False):
             filters
         )
     elif cfg.MODEL.BACKBONE.TYPE == "vgg16":
-        backbone_layers = vgg16_backbone(
-            input_layer,
-            join_paths(cfg.WORK_DIR, cfg.MODEL.BACKBONE.WEIGHTS_PATH)
-        )
+        backbone_layers = vgg16_backbone(input_layer, )
     elif cfg.MODEL.BACKBONE.TYPE == "vgg19":
-        backbone_layers = vgg19_backbone(
-            input_layer,
-            join_paths(cfg.WORK_DIR, cfg.MODEL.BACKBONE.WEIGHTS_PATH)
-        )
+        backbone_layers = vgg19_backbone(input_layer, )
     else:
         raise ValueError(
             "Wrong backbone type passed."
@@ -101,10 +94,7 @@ if __name__ == "__main__":
         # available variants are unet3plus, unet3plus_deepsup, unet3plus_deepsup_cgm
         "MODEL": {"TYPE": "unet3plus",
                   # available variants are unet3plus, vgg16, vgg19
-                  "BACKBONE": {"TYPE": "vgg19",
-                               # weights_path is not applicable for unet3plus backbone
-                               "WEIGHTS_PATH": "checkpoint/backbones/vgg19_imagenet_weights.h5"
-                               }
+                  "BACKBONE": {"TYPE": "vgg19", }
                   }
     }
     unet_3P = prepare_model(OmegaConf.create(cfg), True)
