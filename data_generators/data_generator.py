@@ -49,6 +49,18 @@ def update_batch_size(cfg: DictConfig):
             cfg.HYPER_PARAMETERS.BATCH_SIZE * get_gpus_count()
 
 
+def get_batch_size(cfg: DictConfig):
+    """
+    Return batch size.
+    In case of DALI generator scale up batch size to multi gpus.
+    """
+    if cfg.DATA_GENERATOR_TYPE == "DALI_GENERATOR" and cfg.USE_MULTI_GPUS.VALUE:
+        # change batch size according to available gpus
+        return cfg.HYPER_PARAMETERS.BATCH_SIZE * get_gpus_count()
+    else:
+        return cfg.HYPER_PARAMETERS.BATCH_SIZE
+
+
 def get_iterations(cfg: DictConfig, mode: str):
     """
     Return steps per epoch

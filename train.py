@@ -1,6 +1,7 @@
 """
 Training script
 """
+import numpy as np
 from datetime import datetime, timedelta
 import hydra
 from omegaconf import DictConfig
@@ -194,7 +195,12 @@ def train(cfg: DictConfig):
 
     training_time = timing_callback.train_end_time - timing_callback.train_start_time
     training_time = timedelta(seconds=training_time)
-    print(f"Training time {training_time}")
+    print(f"Total training time {training_time}")
+
+    mean_time = np.mean(timing_callback.batch_time)
+    throughput = data_generator.get_batch_size(cfg) / mean_time
+    print(f"Training latency: {round(mean_time * 1e3, 2)} msec")
+    print(f"Training throughput/FPS: {round(throughput, 2)} samples/sec")
 
 
 @hydra.main(version_base=None, config_path="configs", config_name="config")

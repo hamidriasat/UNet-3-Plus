@@ -5,18 +5,15 @@ import tensorflow as tf
 
 class TimingCallback(tf.keras.callbacks.Callback):
     """
-    Custom callback to note training and prediction time
+    Custom callback to note training time, latency and throughput
     """
 
-    def __init__(self, training: bool):
+    def __init__(self, ):
         super(TimingCallback, self).__init__()
-        self.training = training
-        if self.training:
-            self.train_start_time = None
-            self.train_end_time = None
-        else:
-            self.prediction_time = []
-            self.prediction_start_time = None
+        self.train_start_time = None
+        self.train_end_time = None
+        self.batch_time = []
+        self.batch_start_time = None
 
     def on_train_begin(self, logs: dict):
         tf.print("Training starting time noted.", output_stream=sys.stdout)
@@ -26,18 +23,8 @@ class TimingCallback(tf.keras.callbacks.Callback):
         tf.print("Training ending time noted.", output_stream=sys.stdout)
         self.train_end_time = timer()
 
-    def on_test_batch_begin(self, batch: int, logs: dict):
-        if not self.training:
-            tf.print(
-                f"For batch:{batch} prediction start time noted.",
-                output_stream=sys.stdout
-            )
-            self.prediction_start_time = timer()
+    def on_train_batch_begin(self, batch: int, logs: dict):
+        self.batch_start_time = timer()
 
-    def on_test_batch_end(self, batch: int, logs: dict):
-        if not self.training:
-            tf.print(
-                f"For batch:{batch} prediction end time noted.",
-                output_stream=sys.stdout
-            )
-            self.prediction_time.append(timer() - self.prediction_start_time)
+    def on_train_batch_end(self, batch: int, logs: dict):
+        self.batch_time.append(timer() - self.batch_start_time)
