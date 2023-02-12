@@ -32,7 +32,7 @@ def evaluate_batch(model, images, masks, classes):
     masks = tf.convert_to_tensor(masks)
     predictions = tf.convert_to_tensor(predictions)
 
-    # by default classes=2,
+    # because post-processing is done manually, by default classes=2 to fix axis problem
     dice_value = DiceCoefficient(post_processed=False, classes=2)
     dice_value = dice_value(masks, predictions)
     return tf.get_static_value(dice_value)
