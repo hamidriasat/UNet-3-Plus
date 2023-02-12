@@ -72,7 +72,8 @@ class DiceCoefficient(tf.keras.metrics.Metric):
         be first converted/mapped into their respective class.
         """
         super(DiceCoefficient, self).__init__(name=name, **kwargs)
-        self.dice_value = self.add_weight(name='dice_value', initializer='zeros')
+        self.dice_value = self.add_weight(name='dice_value', initializer='zeros',
+                                          aggregation=tf.VariableAggregation.MEAN)  # SUM
         self.post_processed = post_processed
         self.classes = classes
         if self.classes == 1:
@@ -93,14 +94,13 @@ class DiceCoefficient(tf.keras.metrics.Metric):
         else:
             y_true_, y_pred_ = y_true, y_pred
 
-        self.dice_value.assign_add(self.dice_coef(y_true_, y_pred_))
+        self.dice_value.assign(self.dice_coef(y_true_, y_pred_))
 
     def result(self):
         return self.dice_value
 
-    def reset_states(self):
-        # The state of the metric will be reset at the start of each epoch.
-        self.dice_value.assign(0.)
+    def reset_state(self):
+        self.dice_value.assign(0.0)  # reset metric state
 
     def dice_coef(self, y_true, y_pred, smooth=1.e-9):
         """

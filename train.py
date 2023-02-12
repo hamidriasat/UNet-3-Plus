@@ -94,6 +94,8 @@ def train(cfg: DictConfig):
                     optimizer,
                     dynamic=True
                 )
+            dice_coef = DiceCoefficient(post_processed=True, classes=cfg.OUTPUT.CLASSES)
+            dice_coef = tf.keras.metrics.MeanMetricWrapper(name="dice_coef", fn=dice_coef)
             model = prepare_model(cfg, training=True)
     else:
         optimizer = tf.keras.optimizers.Adam(
@@ -104,14 +106,14 @@ def train(cfg: DictConfig):
                 optimizer,
                 dynamic=True
             )
+        dice_coef = DiceCoefficient(post_processed=True, classes=cfg.OUTPUT.CLASSES)
+        dice_coef = tf.keras.metrics.MeanMetricWrapper(name="dice_coef", fn=dice_coef)
         model = prepare_model(cfg, training=True)
 
     model.compile(
         optimizer=optimizer,
         loss=unet3p_hybrid_loss,
-        metrics=[
-            DiceCoefficient(post_processed=True, classes=cfg.OUTPUT.CLASSES)
-        ],
+        metrics=[dice_coef],
     )
     model.summary()
 
