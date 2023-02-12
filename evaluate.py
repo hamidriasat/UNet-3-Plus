@@ -2,7 +2,6 @@
 Evaluation script used to calculate accuracy of trained model
 """
 import os
-import numpy as np
 import hydra
 from omegaconf import DictConfig
 import tensorflow as tf
@@ -13,7 +12,6 @@ from utils.general_utils import join_paths, set_gpus, suppress_tf_warnings
 from models.model import prepare_model
 from losses.loss import DiceCoefficient
 from losses.unet_loss import unet3p_hybrid_loss
-from callbacks.timing_callback import TimingCallback
 
 
 def evaluate(cfg: DictConfig):
@@ -101,18 +99,16 @@ def evaluate(cfg: DictConfig):
     evaluation_metric = "dice_coef"
     if len(model.outputs) > 1:
         evaluation_metric = f"{model.output_names[0]}_dice_coef"
-    timing_callback = TimingCallback(training=False)
 
     result = model.evaluate(
         x=val_generator,
         steps=validation_steps,
-        callbacks=[timing_callback],
         workers=cfg.DATALOADER_WORKERS,
         return_dict=True,
     )
 
-    # return computed loss, validation accuracy, metric name, prediction time
-    return result, evaluation_metric, timing_callback.prediction_time[5:]
+    # return computed loss, validation accuracy, and it's metric name
+    return result, evaluation_metric
 
 
 @hydra.main(version_base=None, config_path="configs", config_name="config")
@@ -120,13 +116,9 @@ def main(cfg: DictConfig):
     """
     Read config file and pass to evaluate method
     """
-    result, evaluation_metric, time_taken = evaluate(cfg)
+    result, evaluation_metric = evaluate(cfg)
     print(result)
     print(f"Validation dice coefficient: {result[evaluation_metric]}")
-
-    mean_time = np.mean(time_taken)
-    print(f"Average step time: {round(mean_time * 1e3, 2)} msec")
-    print(f"Average throughput/FPS: {round(1 / mean_time, 2)} samples/sec")
 
 
 if __name__ == "__main__":
