@@ -8,7 +8,7 @@ import tensorflow as tf
 from tensorflow.keras import mixed_precision
 
 from data_generators import data_generator
-from utils.general_utils import join_paths, set_gpus, suppress_tf_warnings
+from utils.general_utils import join_paths, set_gpus, suppress_warnings
 from models.model import prepare_model
 from losses.loss import DiceCoefficient
 from losses.unet_loss import unet3p_hybrid_loss
@@ -19,8 +19,8 @@ def evaluate(cfg: DictConfig):
     Evaluate or calculate accuracy of given model
     """
 
-    # suppress TensorFlow warnings
-    suppress_tf_warnings()
+    # suppress TensorFlow and DALI warnings
+    suppress_warnings()
 
     if cfg.USE_MULTI_GPUS.VALUE:
         # change number of visible gpus for evaluation

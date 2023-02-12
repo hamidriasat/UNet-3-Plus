@@ -8,7 +8,7 @@ from tqdm import tqdm
 import tensorflow as tf
 from tensorflow.keras import mixed_precision
 
-from utils.general_utils import join_paths, set_gpus, suppress_tf_warnings
+from utils.general_utils import join_paths, set_gpus, suppress_warnings
 from utils.images_utils import postprocess_mask
 from data_generators import data_generator
 from models.model import prepare_model
@@ -42,7 +42,8 @@ def evaluate(cfg: DictConfig, mode="VAL"):
     """
     Evaluate or calculate accuracy of given model
     """
-    suppress_tf_warnings()
+    # suppress TensorFlow and DALI warnings
+    suppress_warnings()
 
     # set batch size to one
     cfg.HYPER_PARAMETERS.BATCH_SIZE = 1

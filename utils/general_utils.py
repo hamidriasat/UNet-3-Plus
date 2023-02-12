@@ -110,12 +110,13 @@ def get_data_paths(cfg: DictConfig, mode: str, mask_available: bool):
         return images_paths,
 
 
-def suppress_tf_warnings():
+def suppress_warnings():
     """
     Suppress TensorFlow warnings.
     """
     import logging
     logging.getLogger('tensorflow').setLevel(logging.ERROR)
+    logging.getLogger('dali').setLevel(logging.ERROR)
     os.environ["KMP_AFFINITY"] = "noverbose"
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
     import tensorflow as tf

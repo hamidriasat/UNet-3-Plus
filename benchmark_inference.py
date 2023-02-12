@@ -11,7 +11,7 @@ import tensorflow as tf
 from tensorflow.keras import mixed_precision
 
 from data_generators import tf_data_generator
-from utils.general_utils import join_paths
+from utils.general_utils import join_paths, suppress_warnings
 from utils.images_utils import postprocess_mask
 from models.model import prepare_model
 
@@ -20,6 +20,9 @@ def benchmark_time(cfg: DictConfig):
     """
     Output throughput and latency
     """
+
+    # suppress TensorFlow and DALI warnings
+    suppress_warnings()
 
     if cfg.OPTIMIZATION.AMP:
         print("Enabling Automatic Mixed Precision(AMP) training")

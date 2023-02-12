@@ -6,7 +6,7 @@ import hydra
 from omegaconf import DictConfig
 
 from data_generators import tf_data_generator
-from utils.general_utils import join_paths
+from utils.general_utils import join_paths, suppress_warnings
 from utils.images_utils import display
 from utils.images_utils import postprocess_mask, denormalize_mask
 from models.model import prepare_model
@@ -16,6 +16,9 @@ def predict(cfg: DictConfig):
     """
     Predict and visualize given data
     """
+
+    # suppress TensorFlow and DALI warnings
+    suppress_warnings()
 
     # set batch size to one
     cfg.HYPER_PARAMETERS.BATCH_SIZE = 1
