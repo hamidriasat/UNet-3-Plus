@@ -9,7 +9,7 @@ import tensorflow as tf
 from tensorflow.keras import mixed_precision
 
 from data_generators import data_generator
-from utils.general_utils import join_paths, set_gpus
+from utils.general_utils import join_paths, set_gpus, suppress_tf_warnings
 from models.model import prepare_model
 from losses.loss import DiceCoefficient
 from losses.unet_loss import unet3p_hybrid_loss
@@ -20,6 +20,9 @@ def evaluate(cfg: DictConfig):
     """
     Evaluate or calculate accuracy of given model
     """
+
+    # suppress TensorFlow warnings
+    suppress_tf_warnings()
 
     if cfg.USE_MULTI_GPUS.VALUE:
         # change number of visible gpus for evaluation
@@ -53,6 +56,8 @@ def evaluate(cfg: DictConfig):
                     optimizer,
                     dynamic=True
                 )
+            dice_coef = DiceCoefficient(post_processed=True, classes=cfg.OUTPUT.CLASSES)
+            dice_coef = tf.keras.metrics.MeanMetricWrapper(name="dice_coef", fn=dice_coef)
             model = prepare_model(cfg, training=True)
     else:
         optimizer = tf.keras.optimizers.Adam(
@@ -63,14 +68,14 @@ def evaluate(cfg: DictConfig):
                 optimizer,
                 dynamic=True
             )
+        dice_coef = DiceCoefficient(post_processed=True, classes=cfg.OUTPUT.CLASSES)
+        dice_coef = tf.keras.metrics.MeanMetricWrapper(name="dice_coef", fn=dice_coef)
         model = prepare_model(cfg, training=True)
 
     model.compile(
         optimizer=optimizer,
         loss=unet3p_hybrid_loss,
-        metrics=[
-            DiceCoefficient(post_processed=True, classes=cfg.OUTPUT.CLASSES)
-        ],
+        metrics=[dice_coef],
     )
 
     # weights model path
@@ -96,7 +101,7 @@ def evaluate(cfg: DictConfig):
     evaluation_metric = "dice_coef"
     if len(model.outputs) > 1:
         evaluation_metric = f"{model.output_names[0]}_dice_coef"
-    timing_callback = TimingCallback()
+    timing_callback = TimingCallback(training=False)
 
     result = model.evaluate(
         x=val_generator,
@@ -107,7 +112,7 @@ def evaluate(cfg: DictConfig):
     )
 
     # return computed loss, validation accuracy, metric name, prediction time
-    return result, evaluation_metric, timing_callback.prediction_time
+    return result, evaluation_metric, timing_callback.prediction_time[5:]
 
 
 @hydra.main(version_base=None, config_path="configs", config_name="config")
@@ -120,12 +125,8 @@ def main(cfg: DictConfig):
     print(f"Validation dice coefficient: {result[evaluation_metric]}")
 
     mean_time = np.mean(time_taken)
-    mean_fps = 1 / mean_time
-    print(f"Mean Time: {mean_time:1.7f} - Mean FPS: {mean_fps:1.7f}")
-
-    avg_step_time = np.mean(time_taken)
-    print("\nAverage step time: %.1f msec" % (avg_step_time * 1e3))
-    print("Average throughput: %d samples/sec" % (1 / avg_step_time))
+    print(f"Average step time: {round(mean_time * 1e3, 2)} msec")
+    print(f"Average throughput/FPS: {round(1 / mean_time, 2)} samples/sec")
 
 
 if __name__ == "__main__":
