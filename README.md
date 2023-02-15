@@ -176,6 +176,69 @@ For `GPU_IDS` two options are available. It could be either integer or list of i
 - In case list of Integers: each integer will be considered as gpu id
   e.g. [4,5,7] means use gpu 5,6 and 8 for training/evaluation
 
+### Performance
+
+#### Benchmarking
+
+The following section shows how to run benchmarks to measure the model performance in training and inference modes.
+
+##### Training performance benchmark
+
+Run the `train.py` script with the required model configurations to print training benchmark results for each model
+configuration. At the end of the training, a line reporting the training throughput and latency will be printed.
+
+##### Inference performance benchmark
+
+To benchmark inference time, run the `benchmark_inference.py` script with the required model configurations to print
+inference benchmark results for each model configuration. At the end, a line reporting the inference throughput and
+latency will be printed.
+
+```
+python benchmark_inference.py +warmup_steps=50 +bench_steps=100 cfg.HYPER_PARAMETERS.BATCH_SIZE=16
+```
+
+Each of these scripts will by default run a warm-up for 50 iterations and then start benchmarking for another 100
+steps.
+You can adjust these settings with `--warmup-steps` and `--bench-steps` parameters.
+
+#### Results
+
+Here we will explain steps to reproduce experiment results of training and inference.
+
+##### Training accuracy results
+
+###### Training accuracy: NVIDIA DGX A100 (8xA100 80G)
+
+| #GPU | Generator |   XLA   |   AMP   | Training Time<br/>HH:MM:SS | Latency Avg [ms] | Throughput Avg [img/s] | Speed Up  | Dice Score |
+|:----:|:---------:|:-------:|:-------:|:--------------------------:|:----------------:|:----------------------:|:---------:|:----------:|
+|  1   |    TF     | &cross; | &cross; |        51:38:24.24         |      616.14      |         25.97          |    ---    |  0.96032   |
+|  8   |    TF     | &cross; | &cross; |          11:30:45          |      999.39      |         128.08         | 1x (base) |  0.95224   |
+|  8   |   DALI    | &cross; | &cross; |          6:23:43           |      614.26      |         208.38         |   1.8x    |  0.94566   |
+|  8   |   DALI    | &check; | &cross; |          7:33:15           |      692.71      |         184.78         |   1.5x    |  0.94806   |
+|  8   |   DALI    | &cross; | &check; |          3:49:55           |      357.34      |         358.2          |    3x     |  0.94786   |
+|  8   |   DALI    | &check; | &check; |          3:14:24           |      302.83      |         422.68         |   3.5x    |   0.9474   |
+
+Latency is reported in milliseconds per batch whereas throughput is reported in images per second.
+Speed Up comparison is efficiency achieved in terms of training time between different runs.
+
+Note: Training time includes time to load cuDNN in first iteration and the first epoch which take little longer as
+compared to later epochs because in first epoch tensorflow optimizes the training graph. In terms of latency and
+throughput it does not matter much because we have trained networks for 100 epochs which normalizes this during
+averaging.
+
+##### Inference performance results
+
+###### Inference performance: NVIDIA DGX A100 (1xA100 80G)
+
+| Dimension | Batch size |Resolution| Throughput Avg [img/s] | Latency Avg [ms] | Latency 90% [ms] | Latency 95% [ms] | Latency 99% [ms] |
+|:----------:|:---------:|:-------------:|:----------------------:|:----------------:|:----------------:|:----------------:|:----------------:|
+|	2	|	32	|	192x160	|	1728.03	|	18.52	| 22.55 | 23.18 | 24.82 |
+|	2	|	64	|	192x160	|	4160.91	|	15.38	| 17.49 | 18.53 | 19.88 |
+|	2	|	128	|	192x160	|	4672.52	|	27.39	| 27.68 | 27.79 | 27.87 |
+|	3	|	1	|	128x128x128	|	78.2	|	12.79	| 14.29 | 14.87 | 15.25 |
+|	3	|	2	|	128x128x128	|	63.76	|	31.37	| 36.07 | 40.02 | 42.44 |
+|	3	|	4	|	128x128x128	|	83.17	|	48.1	| 50.96 | 52.08 | 52.56 |
+
 ### Inference Demo
 
 For visualization two options are available

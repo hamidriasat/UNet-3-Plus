@@ -25,12 +25,12 @@ def benchmark_time(cfg: DictConfig):
     suppress_warnings()
 
     if cfg.OPTIMIZATION.AMP:
-        print("Enabling Automatic Mixed Precision(AMP) training")
+        print("Enabling Automatic Mixed Precision(AMP)")
         policy = mixed_precision.Policy('mixed_float16')
         mixed_precision.set_global_policy(policy)
 
     if cfg.OPTIMIZATION.XLA:
-        print("Enabling Accelerated Linear Algebra(XLA) training")
+        print("Enabling Accelerated Linear Algebra(XLA)")
         tf.config.optimizer.set_jit(True)
 
     # data generator
