@@ -199,7 +199,7 @@ python benchmark_inference.py +warmup_steps=50 +bench_steps=100 cfg.HYPER_PARAME
 
 Each of these scripts will by default run a warm-up for 50 iterations and then start benchmarking for another 100
 steps.
-You can adjust these settings with `--warmup-steps` and `--bench-steps` parameters.
+You can adjust these settings with `+warmup_steps` and `+bench_steps` parameters.
 
 #### Results
 
@@ -209,14 +209,14 @@ Here we will explain steps to reproduce experiment results of training and infer
 
 ###### Training accuracy: NVIDIA DGX A100 (8xA100 80G)
 
-| #GPU | Generator |   XLA   |   AMP   | Training Time<br/>HH:MM:SS | Latency Avg [ms] | Throughput Avg [img/s] | Speed Up  | Dice Score |
-|:----:|:---------:|:-------:|:-------:|:--------------------------:|:----------------:|:----------------------:|:---------:|:----------:|
-|  1   |    TF     | &cross; | &cross; |        51:38:24.24         |      616.14      |         25.97          |    ---    |  0.96032   |
-|  8   |    TF     | &cross; | &cross; |          11:30:45          |      999.39      |         128.08         | 1x (base) |  0.95224   |
-|  8   |   DALI    | &cross; | &cross; |          6:23:43           |      614.26      |         208.38         |   1.8x    |  0.94566   |
-|  8   |   DALI    | &check; | &cross; |          7:33:15           |      692.71      |         184.78         |   1.5x    |  0.94806   |
-|  8   |   DALI    | &cross; | &check; |          3:49:55           |      357.34      |         358.2          |    3x     |  0.94786   |
-|  8   |   DALI    | &check; | &check; |          3:14:24           |      302.83      |         422.68         |   3.5x    |   0.9474   |
+| #GPU | Generator |   XLA   |   AMP   | Training Time<br/>HH:MM:SS &darr; | Latency Avg [ms] &darr; | Throughput Avg [img/s] &uarr; | Speed Up  | Dice Score |
+|:----:|:---------:|:-------:|:-------:|:---------------------------:|:-----------------------:|:-----------------------------:|:---------:|:----------:|
+|  1   |    TF     | &cross; | &cross; |         51:38:24.24         |         616.14          |             25.97             |    ---    |  0.96032   |
+|  8   |    TF     | &cross; | &cross; |          11:30:45           |         999.39          |            128.08             | 1x (base) |  0.95224   |
+|  8   |   DALI    | &cross; | &cross; |           6:23:43           |         614.26          |            208.38             |   1.8x    |  0.94566   |
+|  8   |   DALI    | &check; | &cross; |           7:33:15           |         692.71          |            184.78             |   1.5x    |  0.94806   |
+|  8   |   DALI    | &cross; | &check; |           3:49:55           |         357.34          |             358.2             |    3x     |  0.94786   |
+|  8   |   DALI    | &check; | &check; |           3:14:24           |         302.83          |            422.68             |   3.5x    |   0.9474   |
 
 Latency is reported in milliseconds per batch whereas throughput is reported in images per second.
 Speed Up comparison is efficiency achieved in terms of training time between different runs.
@@ -230,14 +230,19 @@ averaging.
 
 ###### Inference performance: NVIDIA DGX A100 (1xA100 80G)
 
-| Dimension | Batch size |Resolution| Throughput Avg [img/s] | Latency Avg [ms] | Latency 90% [ms] | Latency 95% [ms] | Latency 99% [ms] |
-|:----------:|:---------:|:-------------:|:----------------------:|:----------------:|:----------------:|:----------------:|:----------------:|
-|	2	|	32	|	192x160	|	1728.03	|	18.52	| 22.55 | 23.18 | 24.82 |
-|	2	|	64	|	192x160	|	4160.91	|	15.38	| 17.49 | 18.53 | 19.88 |
-|	2	|	128	|	192x160	|	4672.52	|	27.39	| 27.68 | 27.79 | 27.87 |
-|	3	|	1	|	128x128x128	|	78.2	|	12.79	| 14.29 | 14.87 | 15.25 |
-|	3	|	2	|	128x128x128	|	63.76	|	31.37	| 36.07 | 40.02 | 42.44 |
-|	3	|	4	|	128x128x128	|	83.17	|	48.1	| 50.96 | 52.08 | 52.56 |
+| Batch Size |   XLA   |   AMP   | Latency Avg [ms] &darr; | Throughput Avg [img/s] &uarr; |
+|:----------:|:-------:|:-------:|:-----------------------:|:-----------------------------:|
+|     1      | &cross; | &cross; |          59.54          |             16.79             |
+|     1      | &check; | &cross; |          70.59          |             14.17             |
+|     1      | &cross; | &check; |          56.17          |             17.80             |
+|     1      | &check; | &check; |          55.54          |             18.16             |
+|     16     | &cross; | &cross; |         225.59          |             70.93             |
+|     16     | &check; | &cross; |         379.93          |             43.15             |
+|     16     | &cross; | &check; |         184.98          |             87.02             |
+|     16     | &check; | &check; |         153.65          |             103.6             |
+
+Inference results are tested on single gpu. Here data generator type does not matter because only prediction time
+is calculated and average between 5 runs.
 
 ### Inference Demo
 
@@ -296,14 +301,6 @@ python predict.py DATASET.VAL.IMAGES_PATH=... DATASET.VAL.MASK_PATH=None
 ```
 
 > This branch is in development mode. So changes are expected.
-
-TODO List
-
-- [x] Complete README.md
-- [x] Add requirements file
-- [ ] Add Data augmentation
-- [x] Add multiprocessing in LiTS data preprocessing
-- [x] Load data through NVIDIA DALI
 
 We appreciate any feedback so reporting problems, and asking questions are welcomed here.
 
