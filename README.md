@@ -71,14 +71,27 @@ versions too.
 * Clone code
 
 ```
-git clone https://github.com/hamidriasat/UNet-3-Plus.git UNet3P
-cd UNet3P
+git clone -b unet3p_nvidia https://github.com/hamidriasat/UNet-3-Plus.git unet3p
+cd unet3p
 ```
 
-* Install other requirements.
+* Build the UNet3P TensorFlow NGC container
+  From `Dockerfile` this will create a docker image with name `unet3p`. This image will contain all the components
+  required to successfully run the UNet3+ code.
 
 ```
-pip install -r requirements.txt
+docker build -t unet3p .
+```
+
+The NGC container contains all the components optimized for usage on NVIDIA hardware.
+
+* Start an interactive session in the NGC container
+
+To run preprocessing/training/inference, following command will launch the container and mount the current directory
+to /workspace/unet3p as a volume in the container
+
+```
+docker run --rm -it --shm-size=1g --ulimit memlock=-1 --pids-limit=8192 --gpus all -p 5012:8888 -v $PWD/:/workspace/unet3p --name unet3p unet3p:latest /bin/bash
 ```
 
 ## Code Structure
@@ -242,7 +255,7 @@ averaging.
 |     16     | &check; | &check; |         153.65          |             103.6             |
 
 Inference results are tested on single gpu. Here data generator type does not matter because only prediction time
-is calculated and average between 5 runs.
+is calculated and averaged between 5 runs.
 
 ### Inference Demo
 
