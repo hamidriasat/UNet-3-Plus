@@ -88,7 +88,7 @@ The NGC container contains all the components optimized for usage on NVIDIA hard
 * Start an interactive session in the NGC container
 
 To run preprocessing/training/inference, following command will launch the container and mount the current directory
-to /workspace/unet3p as a volume in the container
+to `/workspace/unet3p` as a volume in the container
 
 ```
 docker run --rm -it --shm-size=1g --ulimit memlock=-1 --pids-limit=8192 --gpus all -p 5012:8888 -v $PWD/:/workspace/unet3p --name unet3p unet3p:latest /bin/bash

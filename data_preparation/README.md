@@ -9,10 +9,20 @@ This dataset consist of 131 Liver CT Scans.
 
 Register [here](https://competitions.codalab.org/competitions/17094) to get dataset access.
 Go to participate &rarr; Training Data to get dataset link.
-Download Training Batch 1 and Training Batch 2 folders and past them under data folder.
+Download Training Batch 1 and Training Batch 2 zip files and past them under data folder.
 
-- Training Batch 1 consist of 28 scans which are used for testing
-- Training Batch 2 consist of 103 scans which are used for training
+`Training Batch 1` size is 3.97GB and `Training Batch 2` zip file size is 11.5GB.
+
+Inside main directory `/workspace/unet3p` run below command to extract zip files
+
+```shell
+bash data_preparation/extract_data.sh
+```
+
+After extraction `Training Batch 1` folder size will be 11.4GB and `Training Batch 2` folder size will be 38.5GB.
+
+- `Training Batch 1` consist of 28 scans which are used for testing
+- `Training Batch 2` consist of 103 scans which are used for training
 
 Default directory structure looks like this
 
@@ -58,6 +68,24 @@ After completion, you will have a directories like this
             ├── mask
                 ├── mask_0_0.png
                 ├── ...
+
+After processing the `train` folder size will be 5GB and `val` folder size will be 1.7GB.
+
+#### Free space (Optional)
+
+At this stage you can delete the intermediate scans files to free space, run below command
+
+```shell
+bash data_preparation/delete_extracted_scans_data.sh
+```
+
+You can also delete the data zip files using below command, but remember you cannot retrieve them back
+
+```shell
+bash data_preparation/delete_zip_data.sh
+```
+
+> Note: It is recommended to delete scan files but not zip data because you may need it again.
 
 ## Train on custom data
 
