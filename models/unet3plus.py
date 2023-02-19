@@ -102,35 +102,3 @@ def unet3plus(encoder_layer, output_channels, filters):
         output = k.layers.Activation('softmax', dtype='float32')(d)
 
     return output, 'UNet_3Plus'
-
-
-def tiny_unet3plus(input_shape, output_channels, training):
-    """ Sample model only for testing during development """
-    filters = [64, 128, 256, 512, 1024]
-    input_layer = k.layers.Input(shape=input_shape, name="input_layer")  # 320*320*3
-
-    """ Encoder"""
-    # block 1
-    e1 = conv_block(input_layer, filters[0] // 2)  # 320*320*64
-    e1 = conv_block(e1, filters[0] // 2)  # 320*320*64
-
-    # last layer does not have batch norm and relu
-    d = conv_block(e1, output_channels, n=1, is_bn=False, is_relu=False)
-
-    if output_channels == 1:
-        output = k.layers.Activation('sigmoid', dtype='float32')(d)
-    else:
-        # output = k.activations.softmax(d, )
-        output = k.layers.Activation('softmax', dtype='float32')(d)
-
-    if training:
-        e2 = conv_block(e1, filters[0] // 2)  # 320*320*64
-        d2 = conv_block(e2, output_channels, n=1, is_bn=False, is_relu=False)
-        if output_channels == 1:
-            output2 = k.layers.Activation('sigmoid', dtype='float32')(d2)
-        else:
-            output2 = k.layers.Activation('softmax', dtype='float32')(d2)
-
-        return tf.keras.Model(inputs=input_layer, outputs=[output, output2], name='UNet3Plus')
-    else:
-        return tf.keras.Model(inputs=input_layer, outputs=[output], name='UNet3Plus')

@@ -5,7 +5,7 @@ import tensorflow as tf
 from omegaconf import DictConfig
 
 from .backbones import vgg16_backbone, vgg19_backbone, unet3plus_backbone
-from .unet3plus import unet3plus, tiny_unet3plus
+from .unet3plus import unet3plus
 from .unet3plus_deep_supervision import unet3plus_deepsup
 from .unet3plus_deep_supervision_cgm import unet3plus_deepsup_cgm
 
@@ -39,13 +39,7 @@ def prepare_model(cfg: DictConfig, training=False):
         )
     print(f"Using {cfg.MODEL.BACKBONE.TYPE} as a backbone.")
 
-    if cfg.MODEL.TYPE == "tiny_unet3plus":
-        return tiny_unet3plus(
-            input_shape,
-            cfg.OUTPUT.CLASSES,
-            training
-        )
-    elif cfg.MODEL.TYPE == "unet3plus":
+    if cfg.MODEL.TYPE == "unet3plus":
         #  training parameter does not matter in this case
         outputs, model_name = unet3plus(
             backbone_layers,
