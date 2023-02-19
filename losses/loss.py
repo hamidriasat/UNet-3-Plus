@@ -5,7 +5,7 @@ import tensorflow as tf
 import tensorflow.keras.backend as K
 
 
-def iou(y_true, y_pred, smooth=1):
+def iou(y_true, y_pred, smooth=1.e-9):
     """
     Calculate intersection over union (IoU) between images.
     Input shape should be Batch x Height x Width x #Classes (BxHxWxN).
@@ -46,14 +46,14 @@ def focal_loss(y_true, y_pred):
     return tf.reduce_mean(reduced_fl)
 
 
-def ssim_loss(y_true, y_pred):
+def ssim_loss(y_true, y_pred, smooth=1.e-9):
     """
     Structural Similarity Index loss.
     Input shape should be Batch x Height x Width x #Classes (BxHxWxN).
     Using Mean as reduction type for batch values.
     """
     ssim_value = tf.image.ssim(y_true, y_pred, max_val=1)
-    return K.mean(1 - ssim_value, axis=0)
+    return K.mean(1 - ssim_value + smooth, axis=0)
 
 
 class DiceCoefficient(tf.keras.metrics.Metric):
