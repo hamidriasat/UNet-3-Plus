@@ -59,15 +59,6 @@ model-specific information for optimization.
 
 ## Installation
 
-**Requirements**
-
-* Python >= 3.6
-* [TensorFlow](https://www.tensorflow.org/install) >= 2.4
-* CUDA 9.2, 10.0, 10.1, 10.2, 11.0
-
-This code base is tested against above-mentioned Python and TensorFlow versions. But it's expected to work for latest
-versions too.
-
 * Clone code
 
 ```
@@ -140,13 +131,15 @@ Figure 1. UNet3+ architecture diagram from [original paper](https://arxiv.org/ab
 
 This repo contains all three versions of UNet3+.
 
-[//]: # (https://stackoverflow.com/questions/47344571/how-to-draw-checkbox-or-tick-mark-in-github-markdown-table)
-
 | #   |                          Description                          |                             Model Name                             | Training Supported |
 |:----|:-------------------------------------------------------------:|:------------------------------------------------------------------:|:------------------:|
 | 1   |                       UNet3+ Base model                       |                 [unet3plus](/models/unet3plus.py)                  |      &check;       |
 | 2   |                 UNet3+ with Deep Supervision                  |     [unet3plus_deepsup](/models/unet3plus_deep_supervision.py)     |      &check;       |
 | 3   | UNet3+ with Deep Supervision and Classification Guided Module | [unet3plus_deepsup_cgm](/models/unet3plus_deep_supervision_cgm.py) |      &cross;       |
+
+Available backbones are `unet3plus`, `vgg16` and  `vgg19`.
+
+In our case all results are reported using `vgg19` backbone and  `unet3plus` variant.
 
 [Here](/losses/unet_loss.py) you can find UNet3+ hybrid loss.
 
