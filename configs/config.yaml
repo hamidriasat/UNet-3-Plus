@@ -51,7 +51,7 @@ OUTPUT:
 
 HYPER_PARAMETERS:
   EPOCHS: 100
-  BATCH_SIZE: 2  # specify per gpu batch size
+  BATCH_SIZE: 16  # specify per gpu batch size
   LEARNING_RATE: 5e-5  # 0.1, 1e-3, 3e-4, 5e-5
 
 

@@ -1,14 +1,14 @@
-# UNet 3+: A Full-Scale Connected UNet for Medical Image Segmentation [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fhamidriasat%2FUNet-3-Plus&count_bg=%2379C83D&title_bg=%23555555&icon=sega.svg&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)      <a href="/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="license" /></a>
-
-<!-- https://hits.seeyoufarm.com/ -->
+# UNet 3+: A Full-Scale Connected UNet for Medical Image Segmentation
 
 [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/unet-3-a-full-scale-connected-unet-for/medical-image-segmentation-on-lits2017)](https://paperswithcode.com/sota/medical-image-segmentation-on-lits2017?p=unet-3-a-full-scale-connected-unet-for)
 
-` Hit star ⭐ if you find my work useful. `
+This repository provides a script and recipe to train UNet3+ to achieve state of the art accuracy.
+
+[//]: # (, and is tested and maintained by NVIDIA.)
 
 ## Table of Contents
 
-- [UNet 3+](https://arxiv.org/abs/2004.08790) for Image Segmentation in Tensorflow Keras.
+- [UNet 3+](https://arxiv.org/abs/2004.08790) for Image Segmentation in Tensorflow 2.0.
     - [Table of Contents](#table-of-contents)
     - [Feature Support Matrix](#feature-support-matrix)
     - [Installation](#installation)
@@ -16,8 +16,10 @@
     - [Config](#config)
     - [Data Preparation](#data-preparation)
     - [Models](#models)
-    - [Training & Evaluation](#training--evaluation)
+    - [Performance](#performance)
     - [Inference Demo](#inference-demo)
+    - [Known issues](#known-issues)
+    - [Release notes](#release-notes)
 
 ## Feature Support Matrix
 
@@ -85,31 +87,26 @@ to `/workspace/unet3p` as a volume in the container
 docker run --rm -it --shm-size=1g --ulimit memlock=-1 --pids-limit=8192 --gpus all -p 5012:8888 -v $PWD/:/workspace/unet3p --name unet3p unet3p:latest /bin/bash
 ```
 
+Here we are mapping external port `5012` to `8888` inside docker.
+
 ## Code Structure
 
+- **callbacks**: Custom callbacks to monitor training time, latency and throughput
 - **checkpoint**: Model checkpoint and logs directory
-- **configs**: Configuration file
-- **data**: Dataset files (see [Data Preparation](#data-preparation)) for more details
-- **data_generators**: Data loaders for UNet3+
+- **configs**: Configuration file (see [Config](#config) for more details)
+- **data**: Dataset files (see [Data Preparation](#data-preparation) for more details)
+- **data_generators**: Data loaders for UNet3+ (see [Data Generators](#data-generators) for more details)
 - **data_preparation**: For LiTS data preparation and data verification
+- **figures**: Model architecture image
 - **losses**: Implementations of UNet3+ hybrid loss function and dice coefficient
-- **models**: Unet3+ model files
+- **models**: Unet3+ model files (see [Models](#models) for more details)
 - **utils**: Generic utility functions
-- **data_generator.py**: Data generator for training, validation and testing
+- **benchmark_inference.py**: Benchmark script to output model throughput and latency while inference
 - **evaluate.py**: Evaluation script to validate accuracy on trained model
 - **predict.ipynb**: Prediction file used to visualize model output inside notebook(helpful for remote server
   visualization)
 - **predict.py**: Prediction script used to visualize model output
 - **train.py**: Training script
-
-## Config
-
-Configurations are passed through `yaml` file. For more details on config file read [here](/configs/).
-
-## Data Generators
-
-We support two types of data loaders. `NVIDIA DALI` and `TensorFlow Sequence`
-generators. For more details on supported generator types read [here](/data_generators/).
 
 ## Data Preparation
 
@@ -117,101 +114,122 @@ generators. For more details on supported generator types read [here](/data_gene
   on [LiTS - Liver Tumor Segmentation Challenge](https://competitions.codalab.org/competitions/15595).
 - You can also use it to train UNet3+ on custom dataset.
 
-For dataset preparation read [here](/data_preparation/README.md).
+For dataset preparation read [here](data_preparation/README.md).
+
+## Config
+
+Configurations are passed through `yaml` file. For more details on config file read [here](configs/).
+
+## Data Generators
+
+We support two types of data loaders. `NVIDIA DALI` and `TensorFlow Sequence`
+generators. For more details on supported generator types read [here](data_generators/).
 
 ## Models
 
-UNet 3+ is lateset from Unet family, proposed for sementic image segmentation. it takes advantage of full-scale skip
+UNet 3+ is latest from Unet family, proposed for semantic image segmentation. it takes advantage of full-scale skip
 connections and deep supervisions.The full-scale skip connections incorporate low-level details with high-level
 semantics from feature maps in different scales; while the deep supervision learns hierarchical representations from the
 full-scale aggregated feature maps.
-![alt text](/figures/unet3p_architecture.png)
+![alt text](figures/unet3p_architecture.png)
 
 Figure 1. UNet3+ architecture diagram from [original paper](https://arxiv.org/abs/2004.08790).
 
 This repo contains all three versions of UNet3+.
 
-| #   |                          Description                          |                             Model Name                             | Training Supported |
-|:----|:-------------------------------------------------------------:|:------------------------------------------------------------------:|:------------------:|
-| 1   |                       UNet3+ Base model                       |                 [unet3plus](/models/unet3plus.py)                  |      &check;       |
-| 2   |                 UNet3+ with Deep Supervision                  |     [unet3plus_deepsup](/models/unet3plus_deep_supervision.py)     |      &check;       |
-| 3   | UNet3+ with Deep Supervision and Classification Guided Module | [unet3plus_deepsup_cgm](/models/unet3plus_deep_supervision_cgm.py) |      &cross;       |
+| #   |                          Description                          |                            Model Name                             | Training Supported |
+|:----|:-------------------------------------------------------------:|:-----------------------------------------------------------------:|:------------------:|
+| 1   |                       UNet3+ Base model                       |                 [unet3plus](models/unet3plus.py)                  |      &check;       |
+| 2   |                 UNet3+ with Deep Supervision                  |     [unet3plus_deepsup](models/unet3plus_deep_supervision.py)     |      &check;       |
+| 3   | UNet3+ with Deep Supervision and Classification Guided Module | [unet3plus_deepsup_cgm](models/unet3plus_deep_supervision_cgm.py) |      &cross;       |
 
-Available backbones are `unet3plus`, `vgg16` and  `vgg19`.
+Available backbones are `unet3plus`, `vgg16` and  `vgg19`. All backbones are untrained networks.
 
 In our case all results are reported using `vgg19` backbone and  `unet3plus` variant.
 
-[Here](/losses/unet_loss.py) you can find UNet3+ hybrid loss.
+[Here](losses/unet_loss.py) you can find UNet3+ hybrid loss.
 
-### Training & Evaluation
+## Performance
 
-To train a model call `train.py` with required model type and configurations .
-
-e.g. To train on base model run
-
-```
-python train.py MODEL.TYPE=unet3plus
-```
-
-To evaluate the trained models call `evaluate.py`.
-
-e.g. To calculate accuracy of trained UNet3+ Base model on validation data run
-
-```
-python evaluate.py MODEL.TYPE=unet3plus
-```
-
-**Multi Gpu Training**
-
-Our code support multi gpu training
-using [Tensorflow Distributed MirroredStrategy](https://www.tensorflow.org/api_docs/python/tf/distribute/MirroredStrategy)
-.
-By default, training and evaluation is done on only one gpu. To enable multiple gpus you have to explicitly set
-`USE_MULTI_GPUS` values.
-e.g. To train on all available gpus run
-
-```
-python train.py ... USE_MULTI_GPUS.VALUE=True USE_MULTI_GPUS.GPU_IDS=-1 
-```
-
-For `GPU_IDS` two options are available. It could be either integer or list of integers.
-
-- In case Integer:
-    - If integer value is -1 then it uses all available gpus.
-    - Otherwise, if positive number, then use given number of gpus.
-- In case list of Integers: each integer will be considered as gpu id
-  e.g. [4,5,7] means use gpu 5,6 and 8 for training/evaluation
-
-### Performance
-
-#### Benchmarking
+### Benchmarking
 
 The following section shows how to run benchmarks to measure the model performance in training and inference modes.
 
-##### Training performance benchmark
+#### Training performance benchmark
 
-Run the `train.py` script with the required model configurations to print training benchmark results for each model
+Run the `python train.py` script with the required model configurations to print training benchmark results for each
+model
 configuration. At the end of the training, a line reporting the training throughput and latency will be printed.
 
-##### Inference performance benchmark
+To calculate dice score on trained model call `python evaluate.py` with required parameters.
 
-To benchmark inference time, run the `benchmark_inference.py` script with the required model configurations to print
+##### Example 1
+
+To train base model `unet3plus` with `vgg19` backbone on `single GPU`
+using `TensorFlow Sequence Generator` without `Automatic Mixed Precision(AMP)` and `Accelerated Linear Algebra(XLA)` run
+
+```
+python train.py MODEL.TYPE=unet3plus MODEL.BACKBONE.TYPE=vgg19 \
+USE_MULTI_GPUS.VALUE=False \
+DATA_GENERATOR_TYPE=TF_GENERATOR \
+OPTIMIZATION.AMP=False OPTIMIZATION.XLA=False
+```
+
+##### Example 2
+
+To train base model `unet3plus` with `vgg19` backbone on `multiple GPUs`
+using `TensorFlow Sequence Generator` without `Automatic Mixed Precision(AMP)` and `Accelerated Linear Algebra(XLA)` run
+
+```
+python train.py MODEL.TYPE=unet3plus MODEL.BACKBONE.TYPE=vgg19 \
+USE_MULTI_GPUS.VALUE=True USE_MULTI_GPUS.GPU_IDS=-1 \
+DATA_GENERATOR_TYPE=TF_GENERATOR \
+OPTIMIZATION.AMP=False OPTIMIZATION.XLA=False
+```
+
+##### Example 3
+
+To train base model `unet3plus` with `vgg19` backbone on `multiple GPUs`
+using `NVIDIA DALI Generator` with `Automatic Mixed Precision(AMP)` and `Accelerated Linear Algebra(XLA)` run
+
+```
+python train.py MODEL.TYPE=unet3plus MODEL.BACKBONE.TYPE=vgg19 \
+USE_MULTI_GPUS.VALUE=True USE_MULTI_GPUS.GPU_IDS=-1 \
+DATA_GENERATOR_TYPE=DALI_GENERATOR \
+OPTIMIZATION.AMP=True OPTIMIZATION.XLA=True
+```
+
+To evaluate/calculate dice accuracy of model pass same parameters to `evaluate.py` file. See [Config](#config) for
+complete hyper parameter details.
+
+#### Inference performance benchmark
+
+To benchmark inference time, run the `python benchmark_inference.py` script with the required model configurations to
+print
 inference benchmark results for each model configuration. At the end, a line reporting the inference throughput and
 latency will be printed.
 
+For inference run without `data generator` and `GPUs` details but with `batch size`, `warmup_steps`
+and `bench_steps`
+parameters.
+
 ```
-python benchmark_inference.py +warmup_steps=50 +bench_steps=100 cfg.HYPER_PARAMETERS.BATCH_SIZE=16
+python benchmark_inference.py MODEL.TYPE=unet3plus MODEL.BACKBONE.TYPE=vgg19 \
+HYPER_PARAMETERS.BATCH_SIZE=16 \
+OPTIMIZATION.AMP=False OPTIMIZATION.XLA=False \
++warmup_steps=50 +bench_steps=100
 ```
 
 Each of these scripts will by default run a warm-up for 50 iterations and then start benchmarking for another 100
 steps.
 You can adjust these settings with `+warmup_steps` and `+bench_steps` parameters.
 
-#### Results
+### Results
 
-Here we will explain steps to reproduce experiment results of training and inference.
+The following section provide details of results that are achieved in different settings of model training and
+inference.
 
-##### Training accuracy results
+#### Training accuracy results
 
 ###### Training accuracy: NVIDIA DGX A100 (8xA100 80G)
 
@@ -232,7 +250,7 @@ compared to later epochs because in first epoch tensorflow optimizes the trainin
 throughput it does not matter much because we have trained networks for 100 epochs which normalizes this during
 averaging.
 
-##### Inference performance results
+#### Inference performance results
 
 ###### Inference performance: NVIDIA DGX A100 (1xA100 80G)
 
@@ -250,7 +268,7 @@ averaging.
 Inference results are tested on single gpu. Here data generator type does not matter because only prediction time
 is calculated and averaged between 5 runs.
 
-### Inference Demo
+## Inference Demo
 
 For visualization two options are available
 
@@ -259,7 +277,7 @@ For visualization two options are available
 
 In both cases mask is optional
 
-You can visualize results through [predict.ipynb](/predict.ipynb) notebook, or you can also override these settings
+You can visualize results through [predict.ipynb](predict.ipynb) notebook, or you can also override these settings
 through command line and call `predict.py`
 
 1. ***Visualize from directory***
@@ -284,12 +302,12 @@ e.g. To visualize model results on two images along with their corresponding mas
 
 ```shell
 python predict.py MODEL.TYPE=unet3plus \
-DATASET.VAL.IMAGES_PATH=[\
-/workspace/unet3p/data/val/images/image_0_48.png,\
-/workspace/unet3p/data/val/images/image_0_21.png\
-] DATASET.VAL.MASK_PATH=[\
-/workspace/unet3p/data/val/mask/mask_0_48.png,\
-/workspace/unet3p/data/val/mask/mask_0_21.png\
+DATASET.VAL.IMAGES_PATH=[ \
+/workspace/unet3p/data/val/images/image_0_48.png, \
+/workspace/unet3p/data/val/images/image_0_21.png \
+] DATASET.VAL.MASK_PATH=[ \
+/workspace/unet3p/data/val/mask/mask_0_48.png, \
+/workspace/unet3p/data/val/mask/mask_0_21.png \
 ]
 ```
 
@@ -304,6 +322,18 @@ In both cases if mask is not available just set the mask path to None
 ```
 python predict.py DATASET.VAL.IMAGES_PATH=... DATASET.VAL.MASK_PATH=None
 ```
+
+## Known issues
+
+There are no known issues in this release.
+
+## Release notes
+
+### Changelog
+
+Feb 2023
+
+- Initial release
 
 We appreciate any feedback so reporting problems, and asking questions are welcomed here.
 

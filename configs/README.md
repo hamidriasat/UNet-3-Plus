@@ -4,12 +4,35 @@ evaluation.
 We are using [Hydra](https://hydra.cc/) for passing configurations. Hydra is a framework for elegantly configuring
 complex applications. In Hydra you can easily [extend](https://hydra.cc/docs/patterns/extending_configs/)
 and [interpolate](https://hydra.cc/docs/advanced/override_grammar/basic/#primitives) `yaml` config files.
-[Here](https://hydra.cc/docs/1.0/advanced/override_grammar/basic/)  you can read how to pass or override configurations
-through command line.
 
-Most of the configurations attributes in our [config](/configs/config.yaml) are self-explanatory. However, for some
+#### Override Hydra config from command line
+
+[Here](https://hydra.cc/docs/1.0/advanced/override_grammar/basic/)  you can read how to pass or override configurations
+through command line. Overall to
+
+###### Override higher level attribute
+
+Directly access the key and override its value
+
+- For instance to override Data generator pass `DATA_GENERATOR_TYPE=DALI_GENERATOR`
+
+###### Override nested attribute
+
+Use `.` to access nested keys
+
+- For instance to override model type `MODEL.TYPE=unet3plus`
+- To override model backbone `MODEL.BACKBONE.TYPE=vgg19`
+
+To add new element from command line add `+` before attribute name. E.g. `+warmup_steps=50` because warm steps is not
+added in config file.
+
+> Note: Don't add space between list elements, it will create problem with Hydra.
+
+Most of the configurations attributes in our [config](configs/config.yaml) are self-explanatory. However, for some
 attributes additional comments are added.
-You can override configurations from command line too, but it's advisable to override them from config file because it's
+
+You can override configurations from command line too, but it's **advisable to override them from config file** because
+it's
 easy.
 
 By default, hydra stores a log file of each run in a separate directory. We have disabled it in our case,

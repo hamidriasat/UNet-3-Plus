@@ -9,7 +9,7 @@ Sequence data generator is best suited for situations where we need
 advanced control over sample generation or when simple data does not
 fit into memory and must be loaded dynamically.
 
-Our [sequence generator](/data_generators/tf_data_generator.py) generates
+Our [sequence generator](data_generators/tf_data_generator.py) generates
 dataset on multiple cores in real time and feed it right away to deep
 learning model.
 
@@ -22,7 +22,7 @@ image, video and audio data. It can be used as a portable drop-in
 replacement for built in data loaders and data iterators in popular deep
 learning frameworks.
 
-We've used [DALI Pipeline](/data_generators/dali_data_generator.py) to directly load
+We've used [DALI Pipeline](data_generators/dali_data_generator.py) to directly load
 data on `GPU`, which resulted in reduced latency and training time,
 mitigating bottlenecks, by overlapping training and pre-processing. Our code
 base also support's multi GPU data loading for DALI.
