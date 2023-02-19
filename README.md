@@ -268,8 +268,8 @@ In case of visualization from directory, it's going to make prediction and show 
 Override the validation data paths and make sure the directory paths are relative to the project base/root path e.g.
 
 ```
-python predict.py MODEL.TYPE=unet3plus ^
-DATASET.VAL.IMAGES_PATH=/data/val/images/ ^
+python predict.py MODEL.TYPE=unet3plus \
+DATASET.VAL.IMAGES_PATH=/data/val/images/ \
 DATASET.VAL.MASK_PATH=/data/val/mask/
 ```
 
@@ -280,21 +280,20 @@ training data naming convention does not matter you can pass whatever naming con
 and it's corresponding mask are on same index.
 
 e.g. To visualize model results on two images along with their corresponding mask, run
+/workspace/unet3p/data/val/images/image_0_48.png
 
-```
-python predict.py MODEL.TYPE=unet3plus ^
-DATASET.VAL.IMAGES_PATH=[^
-H:\\Projects\\UNet3P\\data\\val\images\\image_0_48.png,^
-H:\\Projects\\UNet3P\\data\\val\images\\image_0_21.png^
-] DATASET.VAL.MASK_PATH=[^
-H:\\Projects\\UNet3P\\data\\val\\mask\\mask_0_48.png,^
-H:\\Projects\\UNet3P\\data\\val\\mask\\mask_0_21.png^
+```shell
+python predict.py MODEL.TYPE=unet3plus \
+DATASET.VAL.IMAGES_PATH=[\
+/workspace/unet3p/data/val/images/image_0_48.png,\
+/workspace/unet3p/data/val/images/image_0_21.png\
+] DATASET.VAL.MASK_PATH=[\
+/workspace/unet3p/data/val/mask/mask_0_48.png,\
+/workspace/unet3p/data/val/mask/mask_0_21.png\
 ]
 ```
 
 For custom data visualization set `SHOW_CENTER_CHANNEL_IMAGE=False`. This should set True for only UNet3+ LiTS data.
-
-These commands are tested on Windows. For Linux replace `^` with \ and replace `H:\\Projects` with your own base path
 
 > Note: Don't add space between list elements, it will create problem with Hydra.
 
@@ -305,8 +304,6 @@ In both cases if mask is not available just set the mask path to None
 ```
 python predict.py DATASET.VAL.IMAGES_PATH=... DATASET.VAL.MASK_PATH=None
 ```
-
-> This branch is in development mode. So changes are expected.
 
 We appreciate any feedback so reporting problems, and asking questions are welcomed here.
 
