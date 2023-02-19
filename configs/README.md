@@ -31,8 +31,10 @@ DATASET:
 MODEL:
   # available variants are unet3plus, unet3plus_deepsup, unet3plus_deepsup_cgm
   TYPE: "unet3plus"
+  BACKBONE:
   ...
 ...
+DATA_GENERATOR_TYPE: "DALI_GENERATOR"  # options are TF_GENERATOR or DALI_GENERATOR
 SHOW_CENTER_CHANNEL_IMAGE: True  # only true for UNet3+. for custom dataset it should be False
 # Model input shape
 INPUT:
