@@ -28,7 +28,7 @@ added in config file.
 
 > Note: Don't add space between list elements, it will create problem with Hydra.
 
-Most of the configurations attributes in our [config](configs/config.yaml) are self-explanatory. However, for some
+Most of the configurations attributes in our [config](./../configs/config.yaml) are self-explanatory. However, for some
 attributes additional comments are added.
 
 You can override configurations from command line too, but it's **advisable to override them from config file** because

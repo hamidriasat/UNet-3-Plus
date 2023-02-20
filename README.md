@@ -59,6 +59,7 @@ XLA provides an alternative mode of running models: it compiles the TensorFlow g
 kernels generated specifically for the given model. Because these kernels are unique to the model, they can exploit
 model-specific information for optimization.
 
+For details on how to enable these features while training and evaluation see [Benchmarking](#benchmarking) section.
 ## Installation
 
 * Clone code
@@ -87,7 +88,7 @@ to `/workspace/unet3p` as a volume in the container
 docker run --rm -it --shm-size=1g --ulimit memlock=-1 --pids-limit=8192 --gpus all -p 5012:8888 -v $PWD/:/workspace/unet3p --name unet3p unet3p:latest /bin/bash
 ```
 
-Here we are mapping external port `5012` to `8888` inside docker.
+Here we are mapping external port `5012` to `8888` inside docker. This will be used for visualization purpose.
 
 ## Code Structure
 
@@ -234,13 +235,13 @@ inference.
 ###### Training accuracy: NVIDIA DGX A100 (8xA100 80G)
 
 | #GPU | Generator |   XLA   |   AMP   | Training Time<br/>HH:MM:SS &darr; | Latency Avg [ms] &darr; | Throughput Avg [img/s] &uarr; | Speed Up  | Dice Score |
-|:----:|:---------:|:-------:|:-------:|:---------------------------:|:-----------------------:|:-----------------------------:|:---------:|:----------:|
-|  1   |    TF     | &cross; | &cross; |         51:38:24.24         |         616.14          |             25.97             |    ---    |  0.96032   |
-|  8   |    TF     | &cross; | &cross; |          11:30:45           |         999.39          |            128.08             | 1x (base) |  0.95224   |
-|  8   |   DALI    | &cross; | &cross; |           6:23:43           |         614.26          |            208.38             |   1.8x    |  0.94566   |
-|  8   |   DALI    | &check; | &cross; |           7:33:15           |         692.71          |            184.78             |   1.5x    |  0.94806   |
-|  8   |   DALI    | &cross; | &check; |           3:49:55           |         357.34          |             358.2             |    3x     |  0.94786   |
-|  8   |   DALI    | &check; | &check; |           3:14:24           |         302.83          |            422.68             |   3.5x    |   0.9474   |
+|:----:|:---------:|:-------:|:-------:|:---------------------------------:|:-----------------------:|:-----------------------------:|:---------:|:----------:|
+|  1   |    TF     | &cross; | &cross; |            51:38:24.24            |         616.14          |             25.97             |    ---    |  0.96032   |
+|  8   |    TF     | &cross; | &cross; |             11:30:45              |         999.39          |            128.08             | 1x (base) |  0.95224   |
+|  8   |   DALI    | &cross; | &cross; |              6:23:43              |         614.26          |            208.38             |   1.8x    |  0.94566   |
+|  8   |   DALI    | &check; | &cross; |              7:33:15              |         692.71          |            184.78             |   1.5x    |  0.94806   |
+|  8   |   DALI    | &cross; | &check; |              3:49:55              |         357.34          |             358.2             |    3x     |  0.94786   |
+|  8   |   DALI    | &check; | &check; |              3:14:24              |         302.83          |            422.68             |   3.5x    |   0.9474   |
 
 Latency is reported in milliseconds per batch whereas throughput is reported in images per second.
 Speed Up comparison is efficiency achieved in terms of training time between different runs.
@@ -270,58 +271,31 @@ is calculated and averaged between 5 runs.
 
 ## Inference Demo
 
-For visualization two options are available
-
-1. [Visualize from directory](#visualize-from-directory)
-2. [Visualize from list](#visualize-from-list)
-
-In both cases mask is optional
-
-You can visualize results through [predict.ipynb](predict.ipynb) notebook, or you can also override these settings
-through command line and call `predict.py`
-
-1. ***Visualize from directory***
-
-In case of visualization from directory, it's going to make prediction and show all images from given directory.
-Override the validation data paths and make sure the directory paths are relative to the project base/root path e.g.
+Model output can be visualized from Jupyter Notebook. Use below command to start Jupyter Lab on port `8888`.
 
 ```
-python predict.py MODEL.TYPE=unet3plus \
-DATASET.VAL.IMAGES_PATH=/data/val/images/ \
-DATASET.VAL.MASK_PATH=/data/val/mask/
+jupyter lab --no-browser --allow-root --ip=0.0.0.0 --port=8888
 ```
 
-2. ***Visualize from list***
+While starting container we mapped system port `5012` to `8888` inside docker.
+> Note: Make sure you have server network ip and port access in case you are working with remote sever.
 
-In case of visualization from list, each list element should contain absolute path of image/mask. For absolute paths
-training data naming convention does not matter you can pass whatever naming convention you have, just make sure images,
-and it's corresponding mask are on same index.
+Now in browser go to link `http://<server ip here>:5012/` to access Jupyter Lab.
+Open [predict.ipynb](predict.ipynb) notebook and rerun the whole notebook to visualize model output.
 
-e.g. To visualize model results on two images along with their corresponding mask, run
-/workspace/unet3p/data/val/images/image_0_48.png
+There are two options for visualization, you can
 
-```shell
-python predict.py MODEL.TYPE=unet3plus \
-DATASET.VAL.IMAGES_PATH=[ \
-/workspace/unet3p/data/val/images/image_0_48.png, \
-/workspace/unet3p/data/val/images/image_0_21.png \
-] DATASET.VAL.MASK_PATH=[ \
-/workspace/unet3p/data/val/mask/mask_0_48.png, \
-/workspace/unet3p/data/val/mask/mask_0_21.png \
-]
-```
+1. Visualize from directory
+
+It's going to make prediction and show all images from given directory. Useful for detailed evaluation.
+
+2. Visualize from list
+
+It's going to make prediction on elements of given list. Use for testing on specific cases.
 
 For custom data visualization set `SHOW_CENTER_CHANNEL_IMAGE=False`. This should set True for only UNet3+ LiTS data.
 
-> Note: Don't add space between list elements, it will create problem with Hydra.
-
-
-
-In both cases if mask is not available just set the mask path to None
-
-```
-python predict.py DATASET.VAL.IMAGES_PATH=... DATASET.VAL.MASK_PATH=None
-```
+For further details on visualization options see [predict.ipynb](predict.ipynb) notebook.
 
 ## Known issues
 

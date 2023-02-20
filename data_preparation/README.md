@@ -93,7 +93,7 @@ To train on custom dateset it's advised that you follow the same train and val d
 mentioned [above](#final-directory).
 
 In our case image file name can be mapped to it's corresponding mask file name by replacing `image` text with `mask`. If
-your data has different mapping then you need to update [image_to_mask_name](utils/images_utils.py#L63) function which
+your data has different mapping then you need to update [image_to_mask_name](./../utils/images_utils.py#L63) function which
 is responsible for converting image name to it's corresponding file name.
 
 Each image should be a color image with 3 channels and `RGB` color format. Each mask is considered as a gray scale
