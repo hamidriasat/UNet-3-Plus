@@ -60,6 +60,7 @@ kernels generated specifically for the given model. Because these kernels are un
 model-specific information for optimization.
 
 For details on how to enable these features while training and evaluation see [Benchmarking](#benchmarking) section.
+
 ## Installation
 
 * Clone code
@@ -132,6 +133,7 @@ UNet 3+ is latest from Unet family, proposed for semantic image segmentation. it
 connections and deep supervisions.The full-scale skip connections incorporate low-level details with high-level
 semantics from feature maps in different scales; while the deep supervision learns hierarchical representations from the
 full-scale aggregated feature maps.
+
 ![alt text](figures/unet3p_architecture.png)
 
 Figure 1. UNet3+ architecture diagram from [original paper](https://arxiv.org/abs/2004.08790).
@@ -202,6 +204,8 @@ OPTIMIZATION.AMP=True OPTIMIZATION.XLA=True
 
 To evaluate/calculate dice accuracy of model pass same parameters to `evaluate.py` file. See [Config](#config) for
 complete hyper parameter details.
+
+Please check [Config](configs/config.yaml) file for more details about default training parameters.
 
 #### Inference performance benchmark
 
